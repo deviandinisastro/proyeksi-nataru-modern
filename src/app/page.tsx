@@ -1,120 +1,85 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MudikHubBundle } from "@/types/mudikhub";
 import OverviewWorkspace from "@/components/workspaces/OverviewWorkspace";
-import DailyTrendWorkspace from "@/components/workspaces/DailyTrendWorkspace";
-import SimpulDirectoryWorkspace from "@/components/workspaces/SimpulDirectoryWorkspace";
 import SpatialMapWorkspace from "@/components/workspaces/SpatialMapWorkspace";
-import CorridorWorkspace from "@/components/workspaces/CorridorWorkspace";
 import SawDecisionWorkspace from "@/components/workspaces/SawDecisionWorkspace";
+import CorridorWorkspace from "@/components/workspaces/CorridorWorkspace";
 import ForecastingWorkspace from "@/components/workspaces/ForecastingWorkspace";
 import ArchitectureWorkspace from "@/components/workspaces/ArchitectureWorkspace";
 import {
   LayoutDashboard,
-  TrendingUp,
-  Building2,
   MapPin,
-  Car,
   Award,
-  Sigma,
-  ShieldCheck,
-  Calendar,
-  ExternalLink,
+  Car,
+  Trophy,
+  Database,
+  Sun,
+  Moon,
+  Building2,
   PanelLeftClose,
   PanelLeftOpen,
   Menu,
   X,
-  Database,
-  Sun,
-  Moon,
+  ExternalLink,
+  Clock,
 } from "lucide-react";
 
-type TabKey =
+type WorkspaceTab =
   | "overview"
-  | "trend"
-  | "directory"
   | "spatial"
-  | "corridor"
   | "saw"
-  | "methodology";
+  | "corridor"
+  | "forecasting"
+  | "architecture";
 
-const NAV_TABS: {
-  id: TabKey;
-  label: string;
-  subtitle: string;
-  section: "OPERASIONAL & KEBIJAKAN" | "SPK & METODOLOGI";
-  icon: React.ComponentType<{ className?: string }>;
-}[] = [
-  {
-    id: "overview",
-    label: "Ikhtisar Proyeksi Posko",
-    subtitle: "4 KPI Eksekutif, Pangsa Moda & Kalender 18 Hari",
-    section: "OPERASIONAL & KEBIJAKAN",
-    icon: LayoutDashboard,
-  },
-  {
-    id: "trend",
-    label: "Tren Harian Proyeksi",
-    subtitle: "Kurva 3 Tahun (2024–2027) Penumpang & Sarana",
-    section: "OPERASIONAL & KEBIJAKAN",
-    icon: TrendingUp,
-  },
-  {
-    id: "directory",
-    label: "Direktori Simpul Multimoda",
-    subtitle: "Peringkat & Tabel Lengkap 1.212 Simpul Resmi",
-    section: "OPERASIONAL & KEBIJAKAN",
-    icon: Building2,
-  },
-  {
-    id: "spatial",
-    label: "Peta Spasial Proyeksi",
-    subtitle: "Web GIS Interaktif 1.212 Simpul Nasional",
-    section: "OPERASIONAL & KEBIJAKAN",
-    icon: MapPin,
-  },
-  {
-    id: "corridor",
-    label: "Titik Kritis Tol & ASDP",
-    subtitle: "4 Gerbang Tol Utama & Pelabuhan Penyeberangan",
-    section: "OPERASIONAL & KEBIJAKAN",
-    icon: Car,
-  },
-  {
-    id: "saw",
-    label: "SPK Metode SAW & Armada",
-    subtitle: "Prioritas Simpul Padat & Rekomendasi Taktis",
-    section: "SPK & METODOLOGI",
-    icon: Award,
-  },
-  {
-    id: "methodology",
-    label: "Matriks & Metodologi",
-    subtitle: "Turnamen 7 Model (MAPE 6,93%) & Star Schema",
-    section: "SPK & METODOLOGI",
-    icon: Sigma,
-  },
-];
-
-export default function HomePage() {
+export default function MudikHubPage() {
   const [bundle, setBundle] = useState<MudikHubBundle | null>(null);
-  const [activeTab, setActiveTab] = useState<TabKey>("overview");
-  const [methodSubTab, setMethodSubTab] = useState<"forecast" | "architecture">(
-    "forecast"
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>("overview");
   const [darkMode, setDarkMode] = useState<boolean>(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const [sidebarHovered, setSidebarHovered] = useState<boolean>(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [clockText, setClockText] = useState<string>("");
+
+  // Sidebar terbuka jika tidak di-collapse ATAU sedang di-hover kursor
+  const isSidebarExpanded = !sidebarCollapsed || sidebarHovered;
 
   useEffect(() => {
+    const root = document.documentElement;
     if (darkMode) {
-      document.documentElement.classList.add("dark");
+      root.classList.add("dark");
     } else {
-      document.documentElement.classList.remove("dark");
+      root.classList.remove("dark");
     }
   }, [darkMode]);
+
+  // Jam Realtime (WIB)
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString("id-ID", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+      const timeStr = now
+        .toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        })
+        .replace(/\./g, ":");
+      setClockText(`${dateStr} • ${timeStr} WIB`);
+    };
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     fetch("./data/mudikhub_master_bundle.json")
@@ -122,18 +87,89 @@ export default function HomePage() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data: MudikHubBundle) => setBundle(data))
-      .catch((err) => setError(err.message));
+      .then((json: MudikHubBundle) => {
+        setBundle(json);
+      })
+      .catch((err) => {
+        setErrorMsg(err.message || "Gagal memuat bundel data.");
+      });
   }, []);
 
-  if (error) {
+  const navGroups: {
+    groupTitle: string;
+    items: {
+      id: WorkspaceTab;
+      label: string;
+      sub: string;
+      badge?: string;
+      icon: any;
+    }[];
+  }[] = [
+    {
+      groupTitle: "Pemantauan & Spasial Posko",
+      items: [
+        {
+          id: "overview",
+          label: "Ikhtisar Eksekutif Posko",
+          sub: "KPI Utama & Kalender 18 Hari",
+          badge: "3 KPI",
+          icon: LayoutDashboard,
+        },
+        {
+          id: "spatial",
+          label: "Peta Web GIS 1.212 Simpul",
+          sub: "Sebaran Titik Pantau Nasional",
+          badge: "1.212",
+          icon: MapPin,
+        },
+        {
+          id: "corridor",
+          label: "Koridor Tol, Arteri & ASDP",
+          sub: "4 Gerbang Tol & Lintas Utama",
+          badge: "4 GT",
+          icon: Car,
+        },
+      ],
+    },
+    {
+      groupTitle: "Keputusan & Metodologi Data",
+      items: [
+        {
+          id: "saw",
+          label: "SPK Metode SAW & Armada",
+          sub: "Prioritas Moda & Alokasi Sarana",
+          badge: "SAW",
+          icon: Award,
+        },
+        {
+          id: "forecasting",
+          label: "Turnamen 7 Model & Rumus",
+          sub: "Evaluasi Damped Holt-Winters",
+          badge: "6,93%",
+          icon: Trophy,
+        },
+        {
+          id: "architecture",
+          label: "Star Schema & ETL Strategi",
+          sub: "Basis Data & Kamus Data",
+          badge: "DB",
+          icon: Database,
+        },
+      ],
+    },
+  ];
+
+  const allItems = navGroups.flatMap((g) => g.items);
+  const currentNav = allItems.find((i) => i.id === activeTab) || allItems[0];
+
+  if (errorMsg) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 text-center bg-[#030b17] text-white">
-        <div className="rounded-2xl p-8 max-w-md border border-rose-500/40 bg-slate-900">
-          <h2 className="text-lg font-bold text-rose-400 mb-2">
-            Gagal Memuat Bundle Data
-          </h2>
-          <p className="text-xs text-slate-300 font-mono">{error}</p>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-950 text-white">
+        <div className="max-w-md p-6 rounded-2xl bg-slate-900 border border-rose-800 text-center">
+          <div className="text-lg font-bold text-rose-400 mb-2">
+            Gagal Memuat Data
+          </div>
+          <p className="text-xs text-slate-300">{errorMsg}</p>
         </div>
       </div>
     );
@@ -141,376 +177,317 @@ export default function HomePage() {
 
   if (!bundle) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#030b17] text-white">
-        <div className="w-12 h-12 rounded-full border-4 border-sky-500/30 border-t-amber-400 animate-spin mb-4" />
-        <h2 className="text-base font-bold text-white">
-          Memuat Basis Data Portal STRATEGI Kemenhub (1.212 Simpul Nasional)...
-        </h2>
-        <p className="text-xs text-slate-400 mt-1">
-          Pusat Data dan Teknologi Informasi — Kementerian Perhubungan RI
-        </p>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-950 text-white">
+        <div className="w-10 h-10 rounded-full border-4 border-sky-500 border-t-transparent animate-spin mb-4" />
+        <div className="text-sm font-bold tracking-wide">
+          Memuat Data Portal STRATEGI Kemenhub (1.212 Simpul Nasional)...
+        </div>
+        <div className="text-xs text-slate-400 mt-1">
+          Pusat Data dan Teknologi Informasi Kementerian Perhubungan RI
+        </div>
       </div>
     );
   }
 
-  const activeNavObj =
-    NAV_TABS.find((t) => t.id === activeTab) || NAV_TABS[0];
-
   return (
-    <div className="min-h-screen flex bg-slate-50 dark:bg-[#030b17] text-slate-900 dark:text-slate-100">
-      {/* Mobile Sidebar Backdrop */}
+    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
+      {/* OVERLAY DRAWER MOBILE */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm lg:hidden"
         />
       )}
 
-      {/* Left Collapsible Sidebar (Matched to proyeksi-nataru-dss Layout) */}
+      {/* SIDEBAR KIRI MODERN: OTOMATIS TERBUKA SEMENTARA SAAT HOVER & TERBUKA TETAP SAAT DIKLIK */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen flex flex-col bg-[#061326] text-slate-100 border-r border-sky-500/20 transition-all duration-300 shrink-0 ${
-          sidebarCollapsed ? "lg:w-20" : "lg:w-72"
+        onMouseEnter={() => {
+          if (sidebarCollapsed) setSidebarHovered(true);
+        }}
+        onMouseLeave={() => {
+          if (sidebarCollapsed) setSidebarHovered(false);
+        }}
+        onClick={() => {
+          if (sidebarCollapsed) {
+            setSidebarCollapsed(false);
+            setSidebarHovered(false);
+          }
+        }}
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 ${
+          isSidebarExpanded ? "lg:w-72" : "lg:w-20"
         } ${
-          mobileMenuOpen
-            ? "translate-x-0 w-72"
-            : "-translate-x-full lg:translate-x-0"
+          sidebarCollapsed && sidebarHovered ? "lg:shadow-2xl lg:shadow-sky-950/50" : ""
+        } ${
+          sidebarCollapsed ? "cursor-pointer" : ""
+        } ${
+          mobileMenuOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        {/* Top Sidebar Brand Header (Centered when collapsed, no clipping!) */}
-        <div
-          className={`h-20 flex items-center border-b border-slate-800/80 shrink-0 ${
-            sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"
-          }`}
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <div
-              onClick={() => sidebarCollapsed && setSidebarCollapsed(false)}
-              title={
-                sidebarCollapsed
-                  ? "Klik untuk melebarkan sidebar"
-                  : "MudikHub Pusdatin Kemenhub"
-              }
-              className={`w-11 h-11 rounded-xl bg-gradient-to-br from-sky-500 via-blue-700 to-amber-400 p-[1.5px] shadow-lg shadow-sky-500/20 shrink-0 ${
-                sidebarCollapsed
-                  ? "cursor-pointer hover:scale-105 transition-transform"
-                  : ""
-              }`}
-            >
-              <div className="w-full h-full bg-[#041022] rounded-[10px] flex items-center justify-center font-black text-sm tracking-tighter text-white">
-                MH
-              </div>
-            </div>
-            {!sidebarCollapsed && (
-              <div className="truncate">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-extrabold tracking-tight text-white">
-                    MUDIK<span className="text-amber-400">HUB</span>
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-sky-500/15 border border-sky-400/30 text-[9px] font-mono text-sky-300 uppercase">
-                    DSS 2026
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                  Pusdatin Kemenhub RI
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile Close Button */}
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-slate-400 hover:text-white"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Navigation Menu List */}
-        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
-          {(["OPERASIONAL & KEBIJAKAN", "SPK & METODOLOGI"] as const).map(
-            (sec) => {
-              const items = NAV_TABS.filter((t) => t.section === sec);
-              return (
-                <div key={sec}>
-                  {!sidebarCollapsed && (
-                    <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                      {sec}
-                    </div>
-                  )}
-                  <div className="space-y-1.5">
-                    {items.map((t) => {
-                      const Icon = t.icon;
-                      const active = activeTab === t.id;
-                      return (
-                        <button
-                          key={t.id}
-                          onClick={() => {
-                            setActiveTab(t.id);
-                            setMobileMenuOpen(false);
-                          }}
-                          title={
-                            sidebarCollapsed
-                              ? `${t.label} — ${t.subtitle}`
-                              : undefined
-                          }
-                          className={`flex items-center rounded-xl text-left transition-all ${
-                            sidebarCollapsed
-                              ? "w-12 h-12 mx-auto justify-center px-0"
-                              : "w-full gap-3 px-3 py-2.5"
-                          } ${
-                            active
-                              ? "bg-gradient-to-r from-sky-600 to-blue-700 text-white shadow-lg shadow-sky-600/25 border border-sky-400/40"
-                              : "text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent"
-                          }`}
-                        >
-                          <Icon
-                            className={`w-5 h-5 shrink-0 ${
-                              active ? "text-amber-300" : "text-sky-400/80"
-                            }`}
-                          />
-                          {!sidebarCollapsed && (
-                            <div className="min-w-0 flex-1">
-                              <div className="text-xs font-bold truncate">
-                                {t.label}
-                              </div>
-                              <div
-                                className={`text-[10px] truncate ${
-                                  active ? "text-sky-100/90" : "text-slate-500"
-                                }`}
-                              >
-                                {t.subtitle}
-                              </div>
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            }
-          )}
-        </div>
-
-        {/* Bottom Sidebar Collapse Toggle & Data Status Box (Matches proyeksi-nataru-dss) */}
-        <div className="p-3 border-t border-slate-800/80 shrink-0 space-y-2.5">
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            title={
-              sidebarCollapsed
-                ? "Lebarkan Menu Sidebar"
-                : "Ciutkan Menu Sidebar"
-            }
-            className={`hidden lg:flex items-center rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-white transition-all text-xs font-medium ${
-              sidebarCollapsed
-                ? "w-12 h-10 mx-auto justify-center"
-                : "w-full px-3 py-2 justify-between"
+        {/* BAGIAN ATAS SIDEBAR: BRANDING PUSDATIN & MENU NAVIGASI */}
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* HEADER BRAND SIDEBAR */}
+          <div
+            className={`h-16 flex items-center border-b border-slate-200 dark:border-slate-800 shrink-0 transition-all duration-300 ${
+              isSidebarExpanded ? "px-4 justify-between" : "px-2 justify-center"
             }`}
           >
-            {!sidebarCollapsed && <span>Ciutkan Menu</span>}
-            {sidebarCollapsed ? (
-              <PanelLeftOpen className="w-4 h-4 text-sky-400" />
-            ) : (
-              <PanelLeftClose className="w-4 h-4 text-sky-400" />
-            )}
-          </button>
-
-          {!sidebarCollapsed ? (
-            <div className="rounded-xl bg-slate-900/90 border border-slate-800 p-3 space-y-2">
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-emerald-400 font-semibold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  Data Terverifikasi
-                </span>
-                <span className="font-mono text-amber-300 font-bold">
-                  98,04%
-                </span>
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gov-navy via-sky-700 to-amber-500 flex items-center justify-center text-white font-black text-sm shadow-md shrink-0">
+                MH
               </div>
-              <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-800/80 text-center">
-                <div className="bg-slate-950/70 rounded-lg py-1 px-1">
-                  <div className="text-[9px] text-slate-400">Simpul</div>
-                  <div className="text-[11px] font-bold text-white font-mono">
-                    1.212
+              {isSidebarExpanded && (
+                <div className="truncate transition-opacity duration-200">
+                  <div className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+                    MudikHub
+                  </div>
+                  <div className="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+                    Pusdatin Kemenhub RI
                   </div>
                 </div>
-                <div className="bg-slate-950/70 rounded-lg py-1 px-1">
-                  <div className="text-[9px] text-slate-400">Posko</div>
-                  <div className="text-[11px] font-bold text-sky-300 font-mono">
-                    18 Hari
+              )}
+            </div>
+
+            {/* Tombol Kecilkan / Sematkan Sidebar saat terbuka */}
+            {isSidebarExpanded && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (sidebarCollapsed) {
+                    // Jika sedang hover sementara, klik tombol ini akan menyematkan tetap terbuka
+                    setSidebarCollapsed(false);
+                    setSidebarHovered(false);
+                  } else {
+                    // Jika sedang terbuka tetap, klik tombol ini akan menutup sidebar
+                    setSidebarCollapsed(true);
+                    setSidebarHovered(false);
+                  }
+                }}
+                className="hidden lg:flex p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                title={
+                  sidebarCollapsed
+                    ? "Klik untuk membuka sidebar secara tetap"
+                    : "Kecilkan Sidebar"
+                }
+              >
+                {sidebarCollapsed ? (
+                  <PanelLeftOpen className="w-4 h-4 text-sky-500" />
+                ) : (
+                  <PanelLeftClose className="w-4 h-4" />
+                )}
+              </button>
+            )}
+
+            {/* Tombol Tutup Mobile */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMobileMenuOpen(false);
+              }}
+              className="lg:hidden p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* DAFTAR MENU WORKSPACE */}
+          <div className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
+            {navGroups.map((group) => (
+              <div key={group.groupTitle}>
+                {isSidebarExpanded && (
+                  <div className="px-2.5 mb-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate">
+                    {group.groupTitle}
                   </div>
+                )}
+                <div className="space-y-1.5">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const active = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        title={!isSidebarExpanded ? `${item.label} — ${item.sub}` : undefined}
+                        className={`flex items-center rounded-xl text-left transition-all duration-200 ${
+                          isSidebarExpanded
+                            ? "w-full gap-3 px-3 py-2.5"
+                            : "w-11 h-11 mx-auto justify-center px-0"
+                        } ${
+                          active
+                            ? "bg-gov-navy text-white shadow-sm dark:bg-sky-600"
+                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white"
+                        }`}
+                      >
+                        <Icon
+                          className={`w-4 h-4 shrink-0 ${
+                            active ? "text-white" : "text-sky-600 dark:text-sky-400"
+                          }`}
+                        />
+                        {isSidebarExpanded && (
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-bold truncate">{item.label}</div>
+                            <div
+                              className={`text-[10px] truncate ${
+                                active ? "text-sky-100" : "text-slate-400 dark:text-slate-500"
+                              }`}
+                            >
+                              {item.sub}
+                            </div>
+                          </div>
+                        )}
+                        {isSidebarExpanded && item.badge && (
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold shrink-0 ${
+                              active
+                                ? "bg-white/20 text-white"
+                                : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-                <div className="bg-slate-950/70 rounded-lg py-1 px-1">
-                  <div className="text-[9px] text-slate-400">Moda</div>
-                  <div className="text-[11px] font-bold text-amber-300 font-mono">
-                    5 Moda
-                  </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* BAGIAN BAWAH SIDEBAR: KARTU SUMBER DATA (SAAT TERBUKA) ATAU TOMBOL BUKA SIDEBAR (SAAT TERTUTUP) */}
+        <div className="p-3 border-t border-slate-200 dark:border-slate-800 shrink-0">
+          {isSidebarExpanded ? (
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80">
+              <div className="flex items-center justify-between gap-1.5">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-800 dark:text-slate-200">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Portal STRATEGI Kemenhub</span>
                 </div>
+                {sidebarCollapsed && (
+                  <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400">
+                    Klik untuk Tetap Buka
+                  </span>
+                )}
               </div>
               <a
                 href="https://strategi.kemenhub.go.id/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between text-[10px] text-sky-400 hover:text-sky-300 pt-1"
+                onClick={(e) => e.stopPropagation()}
+                className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline break-all"
               >
-                <span>Sumber: strategi.kemenhub.go.id</span>
-                <ExternalLink className="w-3 h-3" />
+                <span>https://strategi.kemenhub.go.id/</span>
+                <ExternalLink className="w-3 h-3 shrink-0" />
               </a>
+              <div className="mt-1.5 text-[10px] text-slate-500 dark:text-slate-400">
+                1.212 Simpul Nasional • MAPE 6,93%
+              </div>
             </div>
           ) : (
-            <div
-              className="flex flex-col items-center gap-1 py-1"
-              title="Data Terverifikasi: 1.212 Simpul Resmi Portal STRATEGI Kemenhub"
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setSidebarCollapsed(false);
+                setSidebarHovered(false);
+              }}
+              title="Buka Sidebar Secara Tetap"
+              className="w-11 h-11 mx-auto flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800/90 hover:bg-sky-600 hover:text-white text-sky-600 dark:text-sky-400 border border-slate-200 dark:border-slate-700 transition-all shadow-sm"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[9px] font-mono text-slate-400">1.212</span>
-            </div>
+              <PanelLeftOpen className="w-4 h-4" />
+            </button>
           )}
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      {/* KOLOM KANAN: HEADER RAPI + KONTEN UTAMA + FOOTER RINGKAS */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Sticky Header */}
-        <header className="sticky top-0 z-30 h-20 bg-white/90 dark:bg-[#040f21]/90 backdrop-blur-xl border-b border-slate-200 dark:border-sky-500/20 px-4 sm:px-6 flex items-center justify-between gap-4">
+        {/* TOP HEADER BAR (RAPI, SIMPLE & DILENGKAPI JAM REALTIME) */}
+        <header className="sticky top-0 z-30 h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+              className="lg:hidden p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-4 h-4" />
             </button>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white truncate">
-                  {activeNavObj.label}
-                </h1>
-                <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sky-500/15 border border-sky-400/30 text-[10px] font-semibold text-sky-600 dark:text-sky-300">
-                  Posko Nataru 2026/2027
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                {activeNavObj.subtitle}
+              <h1 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                {currentNav.label}
+              </h1>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                {currentNav.sub}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 text-xs">
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300">
-              <Calendar className="w-3.5 h-3.5 text-sky-500" />
-              18 Des 2026 – 4 Jan 2027 (H-7 s.d. H+10)
-            </span>
-            <span className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 font-medium">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              1.212 Simpul Pantauan Nasional
-            </span>
+          <div className="flex items-center gap-2.5 shrink-0">
+            {/* Jam Realtime WIB */}
+            {clockText && (
+              <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 text-xs font-mono font-semibold text-slate-700 dark:text-slate-200">
+                <Clock className="w-3.5 h-3.5 text-sky-500 animate-pulse" />
+                <span>{clockText}</span>
+              </div>
+            )}
+
+            {/* Toggle Mode Terang / Gelap */}
             <button
               onClick={() => setDarkMode(!darkMode)}
-              title="Ubah Tema Tampilan"
-              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-sky-400 transition"
+              className="flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-sky-500 transition"
+              title={darkMode ? "Ubah ke Mode Terang" : "Ubah ke Mode Gelap"}
             >
               {darkMode ? (
                 <Sun className="w-4 h-4 text-amber-400" />
               ) : (
-                <Moon className="w-4 h-4 text-sky-600" />
+                <Moon className="w-4 h-4 text-slate-700" />
               )}
             </button>
           </div>
         </header>
 
-        {/* Active Workspace Container */}
-        <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6">
+        {/* AREA KONTEN UTAMA WORKSPACE */}
+        <main className="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-6">
           {activeTab === "overview" && (
             <OverviewWorkspace data={bundle} darkMode={darkMode} />
-          )}
-          {activeTab === "trend" && (
-            <DailyTrendWorkspace data={bundle} darkMode={darkMode} />
-          )}
-          {activeTab === "directory" && (
-            <SimpulDirectoryWorkspace data={bundle} darkMode={darkMode} />
           )}
           {activeTab === "spatial" && (
             <SpatialMapWorkspace data={bundle} darkMode={darkMode} />
           )}
-          {activeTab === "corridor" && (
-            <CorridorWorkspace data={bundle} darkMode={darkMode} />
-          )}
           {activeTab === "saw" && (
             <SawDecisionWorkspace data={bundle} darkMode={darkMode} />
           )}
-          {activeTab === "methodology" && (
-            <div className="space-y-6">
-              {/* Sub-tab selector inside Matriks & Metodologi */}
-              <div className="rounded-xl bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Dokumentasi Metodologi Peramalan, Matriks 12 Indikator & Basis Data Star Schema
-                  </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Pilih tampilan evaluasi model deret waktu (MAPE 6,93%) atau arsitektur data Star Schema & kamus data
-                  </p>
-                </div>
-                <div className="inline-flex rounded-xl bg-slate-900/90 p-1 border border-slate-700/80">
-                  <button
-                    onClick={() => setMethodSubTab("forecast")}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                      methodSubTab === "forecast"
-                        ? "bg-sky-600 text-white shadow"
-                        : "text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    <Sigma className="w-3.5 h-3.5" />
-                    Turnamen 7 Model & Matriks 12 Indikator
-                  </button>
-                  <button
-                    onClick={() => setMethodSubTab("architecture")}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                      methodSubTab === "architecture"
-                        ? "bg-amber-500 text-slate-950 shadow"
-                        : "text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    <Database className="w-3.5 h-3.5" />
-                    Star Schema, Kamus Data & Audit ETL
-                  </button>
-                </div>
-              </div>
-
-              {methodSubTab === "forecast" ? (
-                <ForecastingWorkspace data={bundle} darkMode={darkMode} />
-              ) : (
-                <ArchitectureWorkspace data={bundle} darkMode={darkMode} />
-              )}
-            </div>
+          {activeTab === "corridor" && (
+            <CorridorWorkspace data={bundle} darkMode={darkMode} />
+          )}
+          {activeTab === "forecasting" && (
+            <ForecastingWorkspace data={bundle} darkMode={darkMode} />
+          )}
+          {activeTab === "architecture" && (
+            <ArchitectureWorkspace data={bundle} darkMode={darkMode} />
           )}
         </main>
 
-        {/* Official Kemenhub Footer (No student/mentor/campus/BI Metabase/SIASATI) */}
-        <footer className="border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#020813] py-6 px-4 sm:px-6 mt-auto">
-          <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-            <div>
-              <div className="font-bold text-slate-800 dark:text-slate-200">
-                MudikHub — Sistem Pendukung Keputusan & Proyeksi Angkutan Nataru 2026/2027
-              </div>
-              <div className="mt-1">
+        {/* FOOTER RESMI PUSDATIN KEMENHUB RI (RINGKAS & BERSIH SESUAI INSTRUKSI) */}
+        <footer className="mt-12 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-sky-500 shrink-0" />
+              <span>
                 Pusat Data dan Teknologi Informasi (Pusdatin) — Kementerian Perhubungan Republik Indonesia
-              </div>
+              </span>
             </div>
             <div className="sm:text-right">
-              <div className="text-slate-700 dark:text-slate-300 font-medium">
-                Sumber Data Resmi:{" "}
-                <a
-                  href="https://strategi.kemenhub.go.id/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sky-600 dark:text-sky-400 hover:underline font-semibold"
-                >
-                  Portal STRATEGI Kemenhub (https://strategi.kemenhub.go.id/)
-                </a>
-              </div>
-              <div className="mt-1 text-slate-500">
-                Cakupan Terverifikasi: 1.212 Simpul Pantauan Nasional (257 Udara • 197 Perkeretaapian • 215 Jalan • 276 Penyeberangan • 267 Laut)
-              </div>
+              Sumber Data Resmi:{" "}
+              <a
+                href="https://strategi.kemenhub.go.id/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-sky-600 dark:text-sky-400 hover:underline"
+              >
+                Portal STRATEGI Kemenhub (https://strategi.kemenhub.go.id/)
+              </a>
             </div>
           </div>
         </footer>
