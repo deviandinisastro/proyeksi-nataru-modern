@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { MudikHubBundle } from "../types/mudikhub";
-import { OverviewWorkspace } from "../components/workspaces/OverviewWorkspace";
-import { DailyTrendWorkspace } from "../components/workspaces/DailyTrendWorkspace";
-import { SimpulDirectoryWorkspace } from "../components/workspaces/SimpulDirectoryWorkspace";
-import { SpatialMapWorkspace } from "../components/workspaces/SpatialMapWorkspace";
-import { CorridorWorkspace } from "../components/workspaces/CorridorWorkspace";
-import { SawDecisionWorkspace } from "../components/workspaces/SawDecisionWorkspace";
-import { ForecastingWorkspace } from "../components/workspaces/ForecastingWorkspace";
-import { ArchitectureWorkspace } from "../components/workspaces/ArchitectureWorkspace";
+import { MudikHubBundle } from "@/types/mudikhub";
+import OverviewWorkspace from "@/components/workspaces/OverviewWorkspace";
+import DailyTrendWorkspace from "@/components/workspaces/DailyTrendWorkspace";
+import SimpulDirectoryWorkspace from "@/components/workspaces/SimpulDirectoryWorkspace";
+import SpatialMapWorkspace from "@/components/workspaces/SpatialMapWorkspace";
+import CorridorWorkspace from "@/components/workspaces/CorridorWorkspace";
+import SawDecisionWorkspace from "@/components/workspaces/SawDecisionWorkspace";
+import ForecastingWorkspace from "@/components/workspaces/ForecastingWorkspace";
+import ArchitectureWorkspace from "@/components/workspaces/ArchitectureWorkspace";
 import {
   LayoutDashboard,
   TrendingUp,
@@ -26,6 +26,8 @@ import {
   Menu,
   X,
   Database,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 type TabKey =
@@ -98,10 +100,21 @@ const NAV_TABS: {
 export default function HomePage() {
   const [bundle, setBundle] = useState<MudikHubBundle | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
-  const [methodSubTab, setMethodSubTab] = useState<"forecast" | "architecture">("forecast");
+  const [methodSubTab, setMethodSubTab] = useState<"forecast" | "architecture">(
+    "forecast"
+  );
   const [error, setError] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
 
   useEffect(() => {
     fetch("./data/mudikhub_master_bundle.json")
@@ -115,9 +128,11 @@ export default function HomePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 text-center">
-        <div className="glass-card rounded-2xl p-8 max-w-md border border-rose-500/40">
-          <h2 className="text-lg font-bold text-rose-400 mb-2">Gagal Memuat Bundle Data</h2>
+      <div className="min-h-screen flex items-center justify-center p-6 text-center bg-[#030b17] text-white">
+        <div className="rounded-2xl p-8 max-w-md border border-rose-500/40 bg-slate-900">
+          <h2 className="text-lg font-bold text-rose-400 mb-2">
+            Gagal Memuat Bundle Data
+          </h2>
           <p className="text-xs text-slate-300 font-mono">{error}</p>
         </div>
       </div>
@@ -126,7 +141,7 @@ export default function HomePage() {
 
   if (!bundle) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#030b17] text-white">
         <div className="w-12 h-12 rounded-full border-4 border-sky-500/30 border-t-amber-400 animate-spin mb-4" />
         <h2 className="text-base font-bold text-white">
           Memuat Basis Data Portal STRATEGI Kemenhub (1.212 Simpul Nasional)...
@@ -138,10 +153,11 @@ export default function HomePage() {
     );
   }
 
-  const activeNavObj = NAV_TABS.find((t) => t.id === activeTab) || NAV_TABS[0];
+  const activeNavObj =
+    NAV_TABS.find((t) => t.id === activeTab) || NAV_TABS[0];
 
   return (
-    <div className="min-h-screen flex bg-[#030b17] text-slate-100">
+    <div className="min-h-screen flex bg-slate-50 dark:bg-[#030b17] text-slate-900 dark:text-slate-100">
       {/* Mobile Sidebar Backdrop */}
       {mobileMenuOpen && (
         <div
@@ -152,10 +168,12 @@ export default function HomePage() {
 
       {/* Left Collapsible Sidebar (Matched to proyeksi-nataru-dss Layout) */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen flex flex-col bg-[#061326]/95 backdrop-blur-xl border-r border-sky-500/20 transition-all duration-300 ${
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen flex flex-col bg-[#061326] text-slate-100 border-r border-sky-500/20 transition-all duration-300 shrink-0 ${
           sidebarCollapsed ? "lg:w-20" : "lg:w-72"
         } ${
-          mobileMenuOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0"
+          mobileMenuOpen
+            ? "translate-x-0 w-72"
+            : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Top Sidebar Brand Header (Centered when collapsed, no clipping!) */}
@@ -167,9 +185,15 @@ export default function HomePage() {
           <div className="flex items-center gap-3 min-w-0">
             <div
               onClick={() => sidebarCollapsed && setSidebarCollapsed(false)}
-              title={sidebarCollapsed ? "Klik untuk melebarkan sidebar" : "MudikHub Pusdatin Kemenhub"}
+              title={
+                sidebarCollapsed
+                  ? "Klik untuk melebarkan sidebar"
+                  : "MudikHub Pusdatin Kemenhub"
+              }
               className={`w-11 h-11 rounded-xl bg-gradient-to-br from-sky-500 via-blue-700 to-amber-400 p-[1.5px] shadow-lg shadow-sky-500/20 shrink-0 ${
-                sidebarCollapsed ? "cursor-pointer hover:scale-105 transition-transform" : ""
+                sidebarCollapsed
+                  ? "cursor-pointer hover:scale-105 transition-transform"
+                  : ""
               }`}
             >
               <div className="w-full h-full bg-[#041022] rounded-[10px] flex items-center justify-center font-black text-sm tracking-tighter text-white">
@@ -204,68 +228,80 @@ export default function HomePage() {
 
         {/* Navigation Menu List */}
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
-          {(["OPERASIONAL & KEBIJAKAN", "SPK & METODOLOGI"] as const).map((sec) => {
-            const items = NAV_TABS.filter((t) => t.section === sec);
-            return (
-              <div key={sec}>
-                {!sidebarCollapsed && (
-                  <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                    {sec}
-                  </div>
-                )}
-                <div className="space-y-1.5">
-                  {items.map((t) => {
-                    const Icon = t.icon;
-                    const active = activeTab === t.id;
-                    return (
-                      <button
-                        key={t.id}
-                        onClick={() => {
-                          setActiveTab(t.id);
-                          setMobileMenuOpen(false);
-                        }}
-                        title={sidebarCollapsed ? `${t.label} — ${t.subtitle}` : undefined}
-                        className={`flex items-center rounded-xl text-left transition-all ${
-                          sidebarCollapsed
-                            ? "w-12 h-12 mx-auto justify-center px-0"
-                            : "w-full gap-3 px-3 py-2.5"
-                        } ${
-                          active
-                            ? "bg-gradient-to-r from-sky-600 to-blue-700 text-white shadow-lg shadow-sky-600/25 border border-sky-400/40"
-                            : "text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent"
-                        }`}
-                      >
-                        <Icon
-                          className={`w-5 h-5 shrink-0 ${
-                            active ? "text-amber-300" : "text-sky-400/80"
+          {(["OPERASIONAL & KEBIJAKAN", "SPK & METODOLOGI"] as const).map(
+            (sec) => {
+              const items = NAV_TABS.filter((t) => t.section === sec);
+              return (
+                <div key={sec}>
+                  {!sidebarCollapsed && (
+                    <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      {sec}
+                    </div>
+                  )}
+                  <div className="space-y-1.5">
+                    {items.map((t) => {
+                      const Icon = t.icon;
+                      const active = activeTab === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => {
+                            setActiveTab(t.id);
+                            setMobileMenuOpen(false);
+                          }}
+                          title={
+                            sidebarCollapsed
+                              ? `${t.label} — ${t.subtitle}`
+                              : undefined
+                          }
+                          className={`flex items-center rounded-xl text-left transition-all ${
+                            sidebarCollapsed
+                              ? "w-12 h-12 mx-auto justify-center px-0"
+                              : "w-full gap-3 px-3 py-2.5"
+                          } ${
+                            active
+                              ? "bg-gradient-to-r from-sky-600 to-blue-700 text-white shadow-lg shadow-sky-600/25 border border-sky-400/40"
+                              : "text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent"
                           }`}
-                        />
-                        {!sidebarCollapsed && (
-                          <div className="min-w-0 flex-1">
-                            <div className="text-xs font-bold truncate">{t.label}</div>
-                            <div
-                              className={`text-[10px] truncate ${
-                                active ? "text-sky-100/90" : "text-slate-500"
-                              }`}
-                            >
-                              {t.subtitle}
+                        >
+                          <Icon
+                            className={`w-5 h-5 shrink-0 ${
+                              active ? "text-amber-300" : "text-sky-400/80"
+                            }`}
+                          />
+                          {!sidebarCollapsed && (
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold truncate">
+                                {t.label}
+                              </div>
+                              <div
+                                className={`text-[10px] truncate ${
+                                  active ? "text-sky-100/90" : "text-slate-500"
+                                }`}
+                              >
+                                {t.subtitle}
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            }
+          )}
         </div>
 
         {/* Bottom Sidebar Collapse Toggle & Data Status Box (Matches proyeksi-nataru-dss) */}
         <div className="p-3 border-t border-slate-800/80 shrink-0 space-y-2.5">
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            title={sidebarCollapsed ? "Lebarkan Menu Sidebar" : "Ciutkan Menu Sidebar"}
+            title={
+              sidebarCollapsed
+                ? "Lebarkan Menu Sidebar"
+                : "Ciutkan Menu Sidebar"
+            }
             className={`hidden lg:flex items-center rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-white transition-all text-xs font-medium ${
               sidebarCollapsed
                 ? "w-12 h-10 mx-auto justify-center"
@@ -287,20 +323,28 @@ export default function HomePage() {
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   Data Terverifikasi
                 </span>
-                <span className="font-mono text-amber-300 font-bold">98,04%</span>
+                <span className="font-mono text-amber-300 font-bold">
+                  98,04%
+                </span>
               </div>
               <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-800/80 text-center">
                 <div className="bg-slate-950/70 rounded-lg py-1 px-1">
                   <div className="text-[9px] text-slate-400">Simpul</div>
-                  <div className="text-[11px] font-bold text-white font-mono">1.212</div>
+                  <div className="text-[11px] font-bold text-white font-mono">
+                    1.212
+                  </div>
                 </div>
                 <div className="bg-slate-950/70 rounded-lg py-1 px-1">
                   <div className="text-[9px] text-slate-400">Posko</div>
-                  <div className="text-[11px] font-bold text-sky-300 font-mono">18 Hari</div>
+                  <div className="text-[11px] font-bold text-sky-300 font-mono">
+                    18 Hari
+                  </div>
                 </div>
                 <div className="bg-slate-950/70 rounded-lg py-1 px-1">
                   <div className="text-[9px] text-slate-400">Moda</div>
-                  <div className="text-[11px] font-bold text-amber-300 font-mono">5 Moda</div>
+                  <div className="text-[11px] font-bold text-amber-300 font-mono">
+                    5 Moda
+                  </div>
                 </div>
               </div>
               <a
@@ -328,56 +372,81 @@ export default function HomePage() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Sticky Header */}
-        <header className="sticky top-0 z-30 h-20 bg-[#040f21]/85 backdrop-blur-xl border-b border-sky-500/20 px-4 sm:px-6 flex items-center justify-between gap-4">
+        <header className="sticky top-0 z-30 h-20 bg-white/90 dark:bg-[#040f21]/90 backdrop-blur-xl border-b border-slate-200 dark:border-sky-500/20 px-4 sm:px-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white"
+              className="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-extrabold text-white truncate">
+                <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white truncate">
                   {activeNavObj.label}
                 </h1>
-                <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sky-500/15 border border-sky-400/30 text-[10px] font-semibold text-sky-300">
+                <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sky-500/15 border border-sky-400/30 text-[10px] font-semibold text-sky-600 dark:text-sky-300">
                   Posko Nataru 2026/2027
                 </span>
               </div>
-              <p className="text-xs text-slate-400 truncate">{activeNavObj.subtitle}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                {activeNavObj.subtitle}
+              </p>
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2.5 text-xs">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-slate-300">
-              <Calendar className="w-3.5 h-3.5 text-sky-400" />
+          <div className="flex items-center gap-2.5 text-xs">
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300">
+              <Calendar className="w-3.5 h-3.5 text-sky-500" />
               18 Des 2026 – 4 Jan 2027 (H-7 s.d. H+10)
             </span>
-            <span className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-medium">
+            <span className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 font-medium">
               <ShieldCheck className="w-3.5 h-3.5" />
               1.212 Simpul Pantauan Nasional
             </span>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              title="Ubah Tema Tampilan"
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-sky-400 transition"
+            >
+              {darkMode ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-sky-600" />
+              )}
+            </button>
           </div>
         </header>
 
         {/* Active Workspace Container */}
         <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6">
-          {activeTab === "overview" && <OverviewWorkspace bundle={bundle} />}
-          {activeTab === "trend" && <DailyTrendWorkspace bundle={bundle} />}
-          {activeTab === "directory" && <SimpulDirectoryWorkspace bundle={bundle} />}
-          {activeTab === "spatial" && <SpatialMapWorkspace bundle={bundle} />}
-          {activeTab === "corridor" && <CorridorWorkspace bundle={bundle} />}
-          {activeTab === "saw" && <SawDecisionWorkspace bundle={bundle} />}
+          {activeTab === "overview" && (
+            <OverviewWorkspace data={bundle} darkMode={darkMode} />
+          )}
+          {activeTab === "trend" && (
+            <DailyTrendWorkspace data={bundle} darkMode={darkMode} />
+          )}
+          {activeTab === "directory" && (
+            <SimpulDirectoryWorkspace data={bundle} darkMode={darkMode} />
+          )}
+          {activeTab === "spatial" && (
+            <SpatialMapWorkspace data={bundle} darkMode={darkMode} />
+          )}
+          {activeTab === "corridor" && (
+            <CorridorWorkspace data={bundle} darkMode={darkMode} />
+          )}
+          {activeTab === "saw" && (
+            <SawDecisionWorkspace data={bundle} darkMode={darkMode} />
+          )}
           {activeTab === "methodology" && (
             <div className="space-y-6">
               {/* Sub-tab selector inside Matriks & Metodologi */}
-              <div className="glass-card rounded-2xl p-4 border border-sky-500/20 flex flex-wrap items-center justify-between gap-3">
+              <div className="rounded-xl bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-sm font-bold text-white">
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">
                     Dokumentasi Metodologi Peramalan, Matriks 12 Indikator & Basis Data Star Schema
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Pilih tampilan evaluasi model deret waktu (MAPE 6,93%) atau arsitektur data Star Schema & kamus data
                   </p>
                 </div>
@@ -408,19 +477,19 @@ export default function HomePage() {
               </div>
 
               {methodSubTab === "forecast" ? (
-                <ForecastingWorkspace bundle={bundle} />
+                <ForecastingWorkspace data={bundle} darkMode={darkMode} />
               ) : (
-                <ArchitectureWorkspace bundle={bundle} />
+                <ArchitectureWorkspace data={bundle} darkMode={darkMode} />
               )}
             </div>
           )}
         </main>
 
         {/* Official Kemenhub Footer (No student/mentor/campus/BI Metabase/SIASATI) */}
-        <footer className="border-t border-slate-800/80 bg-[#020813] py-6 px-4 sm:px-6 mt-auto">
-          <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-slate-400">
+        <footer className="border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#020813] py-6 px-4 sm:px-6 mt-auto">
+          <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
             <div>
-              <div className="font-bold text-slate-200">
+              <div className="font-bold text-slate-800 dark:text-slate-200">
                 MudikHub — Sistem Pendukung Keputusan & Proyeksi Angkutan Nataru 2026/2027
               </div>
               <div className="mt-1">
@@ -428,13 +497,13 @@ export default function HomePage() {
               </div>
             </div>
             <div className="sm:text-right">
-              <div className="text-slate-300 font-medium">
+              <div className="text-slate-700 dark:text-slate-300 font-medium">
                 Sumber Data Resmi:{" "}
                 <a
                   href="https://strategi.kemenhub.go.id/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sky-400 hover:underline font-semibold"
+                  className="text-sky-600 dark:text-sky-400 hover:underline font-semibold"
                 >
                   Portal STRATEGI Kemenhub (https://strategi.kemenhub.go.id/)
                 </a>

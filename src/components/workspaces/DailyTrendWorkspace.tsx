@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { EChartsWrapper, echarts_Gradient } from "../EChartsWrapper";
-import { MudikHubBundle } from "../../types/mudikhub";
+import EChartBox from "@/components/charts/EChartBox";
+import { MudikHubBundle } from "@/types/mudikhub";
 import {
   TrendingUp,
   Users,
@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 
 interface Props {
-  bundle: MudikHubBundle;
+  data: MudikHubBundle;
+  darkMode?: boolean;
 }
 
 const MODA_LABELS: Record<string, string> = {
@@ -29,41 +30,57 @@ const MODA_LABELS: Record<string, string> = {
   "Jalan Arteri": "Jalan Arteri Nasional (Mobil + Motor + Bus + Barang)",
 };
 
-export function DailyTrendWorkspace({ bundle }: Props) {
+export default function DailyTrendWorkspace({ data: bundle }: Props) {
   const [selectedMetric, setSelectedMetric] = useState<"penumpang" | "sarana">("penumpang");
   const [selectedModa, setSelectedModa] = useState<string>("ALL");
 
   const dailyRecords = useMemo(() => {
-    const filtered = bundle.fact_daily.filter((r) => {
-      if (r.indikator !== selectedMetric) return false;
-      if (selectedModa === "ALL") {
-        if (selectedMetric === "penumpang") {
-          return [
-            "Angkutan Jalan",
-            "Angkutan Laut",
-            "Angkutan Penyeberangan",
-            "Angkutan Udara",
-            "Perkeretaapian",
-          ].includes(r.nama_moda);
-        } else {
-          return true;
-        }
-      }
-      return r.nama_moda === selectedModa;
-    });
+    const sourceRows =
+      selectedMetric === "penumpang"
+        ? bundle.harian_penumpang_per_moda
+        : bundle.harian_sarana_per_moda;
 
-    return bundle.dim_waktu.map((w) => {
-      const rows = filtered.filter((r) => r.kode_hari === w.kode_hari);
-      const v24 = rows.reduce((acc, r) => acc + r.realisasi_2024, 0);
-      const v25 = rows.reduce((acc, r) => acc + r.realisasi_2025, 0);
-      const v26 = rows.reduce((acc, r) => acc + r.proyeksi_2026, 0);
-      return {
-        ...w,
-        v24: Math.round(v24),
-        v25: Math.round(v25),
-        v26: Math.round(v26),
-        growth26: v25 > 0 ? ((v26 - v25) / v25) * 100 : 0,
-      };
+    return bundle.kalender_18_hari.map((kal) => {
+      if (selectedModa === "ALL") {
+        const v24 =
+          selectedMetric === "penumpang" ? kal.penumpang_2024 : kal.sarana_2024;
+        const v25 =
+          selectedMetric === "penumpang" ? kal.penumpang_2025 : kal.sarana_2025;
+        const v26 =
+          selectedMetric === "penumpang"
+            ? kal.penumpang_proyeksi_2026
+            : kal.sarana_proyeksi_2026;
+        return {
+          kode_hari: kal.hari_posko,
+          hari_kalender: kal.hari_pekan,
+          tanggal_2026: kal.tanggal,
+          fase_operasional: kal.fase,
+          status_label: kal.status_label,
+          v24: Math.round(v24),
+          v25: Math.round(v25),
+          v26: Math.round(v26),
+          growth26: v25 > 0 ? ((v26 - v25) / v25) * 100 : 0,
+        };
+      } else {
+        const match = sourceRows.find(
+          (r) =>
+            r.Hari_Operasional === kal.hari_posko && r.Moda === selectedModa
+        );
+        const v24 = match ? match.Volume_2024 : 0;
+        const v25 = match ? match.Volume_2025 : 0;
+        const v26 = match ? match.Proyeksi_2026_2027 : 0;
+        return {
+          kode_hari: kal.hari_posko,
+          hari_kalender: kal.hari_pekan,
+          tanggal_2026: kal.tanggal,
+          fase_operasional: kal.fase,
+          status_label: kal.status_label,
+          v24: Math.round(v24),
+          v25: Math.round(v25),
+          v26: Math.round(v26),
+          growth26: v25 > 0 ? ((v26 - v25) / v25) * 100 : 0,
+        };
+      }
     });
   }, [bundle, selectedMetric, selectedModa]);
 
@@ -82,7 +99,9 @@ export function DailyTrendWorkspace({ bundle }: Props) {
   }, [dailyRecords]);
 
   const trendOption = useMemo(() => {
-    const labels = dailyRecords.map((d) => `${d.kode_hari}\n(${d.hari_kalender.slice(0, 3)})`);
+    const labels = dailyRecords.map(
+      (d) => `${d.kode_hari}\n(${d.hari_kalender.slice(0, 3)})`
+    );
     return {
       tooltip: {
         trigger: "axis",
@@ -90,7 +109,8 @@ export function DailyTrendWorkspace({ bundle }: Props) {
         borderColor: "rgba(56, 189, 248, 0.3)",
         textStyle: { color: "#e2e8f0", fontSize: 12 },
         valueFormatter: (value: number) =>
-          value?.toLocaleString("id-ID") + (selectedMetric === "penumpang" ? " orang" : " unit"),
+          value?.toLocaleString("id-ID") +
+          (selectedMetric === "penumpang" ? " orang" : " unit"),
       },
       legend: {
         data: [
@@ -101,7 +121,13 @@ export function DailyTrendWorkspace({ bundle }: Props) {
         top: 0,
         textStyle: { color: "#94a3b8", fontSize: 12 },
       },
-      grid: { left: "3%", right: "3%", bottom: "10%", top: "14%", containLabel: true },
+      grid: {
+        left: "3%",
+        right: "3%",
+        bottom: "10%",
+        top: "14%",
+        containLabel: true,
+      },
       xAxis: {
         type: "category",
         boundaryGap: false,
@@ -120,7 +146,9 @@ export function DailyTrendWorkspace({ bundle }: Props) {
             return String(val);
           },
         },
-        splitLine: { lineStyle: { color: "rgba(148,163,184,0.08)", type: "dashed" } },
+        splitLine: {
+          lineStyle: { color: "rgba(148,163,184,0.08)", type: "dashed" },
+        },
       },
       series: [
         {
@@ -143,10 +171,17 @@ export function DailyTrendWorkspace({ bundle }: Props) {
           lineStyle: { width: 2.5, color: "#0085ca" },
           itemStyle: { color: "#0085ca" },
           areaStyle: {
-            color: echarts_Gradient(0, 0, 0, 1, [
-              { offset: 0, color: "rgba(0, 133, 202, 0.25)" },
-              { offset: 1, color: "rgba(0, 133, 202, 0.0)" },
-            ]),
+            color: {
+              type: "linear",
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: "rgba(0, 133, 202, 0.25)" },
+                { offset: 1, color: "rgba(0, 133, 202, 0.0)" },
+              ],
+            },
           },
         },
         {
@@ -159,10 +194,17 @@ export function DailyTrendWorkspace({ bundle }: Props) {
           lineStyle: { width: 3.5, color: "#ffbd2c" },
           itemStyle: { color: "#ffbd2c" },
           areaStyle: {
-            color: echarts_Gradient(0, 0, 0, 1, [
-              { offset: 0, color: "rgba(255, 189, 44, 0.30)" },
-              { offset: 1, color: "rgba(255, 189, 44, 0.01)" },
-            ]),
+            color: {
+              type: "linear",
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: "rgba(255, 189, 44, 0.30)" },
+                { offset: 1, color: "rgba(255, 189, 44, 0.01)" },
+              ],
+            },
           },
           markPoint: {
             data: [
@@ -182,20 +224,26 @@ export function DailyTrendWorkspace({ bundle }: Props) {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header & Filter Panel */}
-      <div className="glass-card rounded-2xl p-6 border border-sky-500/20">
+      <div className="rounded-xl bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-400/25 text-sky-300 text-xs font-medium mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-400/25 text-sky-400 text-xs font-medium mb-2">
               <TrendingUp className="w-3.5 h-3.5" />
               Analisis Deret Waktu 18 Hari Posko Terpadu (H-7 s.d. H+10)
             </div>
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
               Tren Harian Pergerakan Penumpang & Sarana (2024–2027)
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Komparasi realisasi historis terhadap proyeksi Nataru 2026/2027 menggunakan model pemenang{" "}
-              <span className="text-amber-300 font-semibold">Damped Holt-Winters (\(\phi = 0,98\))</span> dengan sumber data resmi{" "}
-              <span className="text-sky-300 font-semibold">Portal STRATEGI Kemenhub</span>.
+              <span className="text-amber-500 dark:text-amber-300 font-semibold">
+                Damped Holt-Winters (φ = 0,98)
+              </span>{" "}
+              dengan sumber data resmi{" "}
+              <span className="text-sky-600 dark:text-sky-300 font-semibold">
+                Portal STRATEGI Kemenhub
+              </span>
+              .
             </p>
           </div>
 
@@ -204,7 +252,10 @@ export function DailyTrendWorkspace({ bundle }: Props) {
               <button
                 onClick={() => {
                   setSelectedMetric("penumpang");
-                  if (selectedModa === "Jalan Tol" || selectedModa === "Jalan Arteri") {
+                  if (
+                    selectedModa === "Jalan Tol" ||
+                    selectedModa === "Jalan Arteri"
+                  ) {
                     setSelectedModa("ALL");
                   }
                 }}
@@ -271,7 +322,7 @@ export function DailyTrendWorkspace({ bundle }: Props) {
         </div>
 
         {/* Summary Mini Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-5 pt-5 border-t border-slate-800/80">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-5 pt-5 border-t border-slate-200 dark:border-slate-800/80">
           <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
             <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
               Akumulasi Realisasi 2024/2025
@@ -300,7 +351,8 @@ export function DailyTrendWorkspace({ bundle }: Props) {
                 Total Proyeksi 2026/2027
               </span>
               <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-400">
-                <ArrowUpRight className="w-3 h-3" />+{totals.growth.toFixed(2).replace(".", ",")}%
+                <ArrowUpRight className="w-3 h-3" />+
+                {totals.growth.toFixed(2).replace(".", ",")}%
               </span>
             </div>
             <div className="text-lg font-bold text-amber-300 font-mono mt-1">
@@ -329,13 +381,13 @@ export function DailyTrendWorkspace({ bundle }: Props) {
       </div>
 
       {/* Main Interactive Line Chart */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="rounded-xl bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-white">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
               Kurva Pergerakan Harian: {MODA_LABELS[selectedModa]}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Garis putus-putus abu-abu (2024/2025), garis biru (Realisasi 2025/2026), dan garis emas tebal (Proyeksi 2026/2027)
             </p>
           </div>
@@ -343,19 +395,19 @@ export function DailyTrendWorkspace({ bundle }: Props) {
             18 Titik Observasi Posko
           </span>
         </div>
-        <EChartsWrapper option={trendOption} height="410px" />
+        <EChartBox option={trendOption} height="410px" />
       </div>
 
       {/* Detailed 18-Day Table */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="rounded-xl bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
             <Table2 className="w-5 h-5 text-sky-400" />
             <div>
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Tabel Rincian Harian 18 Hari Posko ({MODA_LABELS[selectedModa]})
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Perbandingan kuantitatif nilai harian 2024/2025, 2025/2026, Proyeksi 2026/2027, dan status operasional posko
               </p>
             </div>
@@ -420,7 +472,9 @@ export function DailyTrendWorkspace({ bundle }: Props) {
                     <td className="py-2.5 px-4 text-right font-mono">
                       <span
                         className={
-                          row.growth26 >= 0 ? "text-emerald-400 font-semibold" : "text-rose-400"
+                          row.growth26 >= 0
+                            ? "text-emerald-400 font-semibold"
+                            : "text-rose-400"
                         }
                       >
                         {row.growth26 >= 0 ? "+" : ""}

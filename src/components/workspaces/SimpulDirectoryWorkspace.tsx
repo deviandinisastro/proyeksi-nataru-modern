@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { MudikHubBundle } from "../../types/mudikhub";
-import { EChartsWrapper } from "../EChartsWrapper";
+import { MudikHubBundle } from "@/types/mudikhub";
+import EChartBox from "@/components/charts/EChartBox";
 import {
   Search,
   Filter,
@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 
 interface Props {
-  bundle: MudikHubBundle;
+  data: MudikHubBundle;
+  darkMode?: boolean;
 }
 
 const MODA_META: Record<
@@ -53,7 +54,7 @@ const MODA_META: Record<
   },
 };
 
-export function SimpulDirectoryWorkspace({ bundle }: Props) {
+export default function SimpulDirectoryWorkspace({ data: bundle }: Props) {
   const [selectedModa, setSelectedModa] = useState<string>("ALL");
   const [selectedProvinsi, setSelectedProvinsi] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -62,16 +63,26 @@ export function SimpulDirectoryWorkspace({ bundle }: Props) {
 
   const provinces = useMemo(() => {
     const set = new Set<string>();
-    bundle.dim_simpul_1212.forEach((s) => {
+    bundle.simpul_1212.forEach((s) => {
       if (s.provinsi && s.provinsi !== "-") set.add(s.provinsi);
     });
     return Array.from(set).sort();
-  }, [bundle.dim_simpul_1212]);
+  }, [bundle.simpul_1212]);
+
+  const rankedSimpul = useMemo(() => {
+    return [...bundle.simpul_1212]
+      .sort((a, b) => b.proyeksi_pnp_2026 - a.proyeksi_pnp_2026)
+      .map((s, idx) => ({
+        ...s,
+        rank_nasional: idx + 1,
+      }));
+  }, [bundle.simpul_1212]);
 
   const filteredSimpul = useMemo(() => {
-    return bundle.dim_simpul_1212.filter((s) => {
-      if (selectedModa !== "ALL" && s.kategori_moda !== selectedModa) return false;
-      if (selectedProvinsi !== "ALL" && s.provinsi !== selectedProvinsi) return false;
+    return rankedSimpul.filter((s) => {
+      if (selectedModa !== "ALL" && s.kode_moda !== selectedModa) return false;
+      if (selectedProvinsi !== "ALL" && s.provinsi !== selectedProvinsi)
+        return false;
       if (searchQuery.trim() !== "") {
         const q = searchQuery.toLowerCase();
         const matchName = s.nama_simpul.toLowerCase().includes(q);
@@ -81,11 +92,11 @@ export function SimpulDirectoryWorkspace({ bundle }: Props) {
       }
       return true;
     });
-  }, [bundle.dim_simpul_1212, selectedModa, selectedProvinsi, searchQuery]);
+  }, [rankedSimpul, selectedModa, selectedProvinsi, searchQuery]);
 
   const top12NodesOption = useMemo(() => {
     const top12 = [...filteredSimpul]
-      .sort((a, b) => b.proyeksi_2026 - a.proyeksi_2026)
+      .sort((a, b) => b.proyeksi_pnp_2026 - a.proyeksi_pnp_2026)
       .slice(0, 12)
       .reverse();
 
@@ -102,7 +113,13 @@ export function SimpulDirectoryWorkspace({ bundle }: Props) {
         top: 0,
         textStyle: { color: "#94a3b8", fontSize: 11 },
       },
-      grid: { left: "2%", right: "5%", bottom: "4%", top: "12%", containLabel: true },
+      grid: {
+        left: "2%",
+        right: "5%",
+        bottom: "4%",
+        top: "12%",
+        containLabel: true,
+      },
       xAxis: {
         type: "value",
         axisLabel: {
@@ -113,12 +130,16 @@ export function SimpulDirectoryWorkspace({ bundle }: Props) {
               ? (v / 1_000_000).toFixed(1) + "Jt"
               : (v / 1_000).toFixed(0) + "Rb",
         },
-        splitLine: { lineStyle: { color: "rgba(148,163,184,0.08)", type: "dashed" } },
+        splitLine: {
+          lineStyle: { color: "rgba(148,163,184,0.08)", type: "dashed" },
+        },
       },
       yAxis: {
         type: "category",
         data: top12.map((n) =>
-          n.nama_simpul.length > 28 ? n.nama_simpul.slice(0, 28) + "…" : n.nama_simpul
+          n.nama_simpul.length > 28
+            ? n.nama_simpul.slice(0, 28) + "…"
+            : n.nama_simpul
         ),
         axisLabel: { color: "#cbd5e1", fontSize: 11 },
       },
@@ -126,13 +147,13 @@ export function SimpulDirectoryWorkspace({ bundle }: Props) {
         {
           name: "Realisasi 2025/2026",
           type: "bar",
-          data: top12.map((n) => n.realisasi_2025),
+          data: top12.map((n) => n.realisasi_pnp_2025),
           itemStyle: { color: "#0085ca", borderRadius: [0, 4, 4, 0] },
         },
         {
           name: "Proyeksi 2026/2027",
           type: "bar",
-          data: top12.map((n) => n.proyeksi_2026),
+          data: top12.map((n) => n.proyeksi_pnp_2026),
           itemStyle: { color: "#ffbd2c", borderRadius: [0, 4, 4, 0] },
         },
       ],
@@ -148,19 +169,21 @@ export function SimpulDirectoryWorkspace({ bundle }: Props) {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header & 5 Moda Summary Cards */}
-      <div className="glass-card rounded-2xl p-6 border border-sky-500/20">
+      <div className="rounded-xl bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/25 text-emerald-300 text-xs font-medium mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/25 text-emerald-400 text-xs font-medium mb-2">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Direktori Master 1.212 Simpul Pantauan Nasional Terverifikasi
             </div>
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
               Direktori Simpul Transportasi Multimoda (1.212 Simpul Resmi)
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Basis data lengkap seluruh simpul pantauan nasional dari{" "}
-              <span className="text-sky-300 font-semibold">Portal STRATEGI Kemenhub</span>{" "}
+              <span className="text-sky-600 dark:text-sky-300 font-semibold">
+                Portal STRATEGI Kemenhub
+              </span>{" "}
               meliputi Bandara, Stasiun Kereta Api, Terminal Bus Tipe A, Pelabuhan Penyeberangan ASDP, dan Pelabuhan Laut.
             </p>
           </div>
@@ -207,37 +230,41 @@ export function SimpulDirectoryWorkspace({ bundle }: Props) {
       </div>
 
       {/* Top 12 Horizontal Bar Chart */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="rounded-xl bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
           <div className="flex items-center gap-2.5">
             <BarChart3 className="w-5 h-5 text-amber-400" />
             <div>
-              <h3 className="text-base font-bold text-white">
-                Peringkat 12 Simpul Terpadat ({selectedModa === "ALL" ? "Lintas Moda Nasional" : `Moda ${selectedModa}`})
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Peringkat 12 Simpul Terpadat (
+                {selectedModa === "ALL"
+                  ? "Lintas Moda Nasional"
+                  : `Moda ${selectedModa}`}
+                )
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Komparasi volume keberangkatan penumpang Realisasi 2025/2026 vs Proyeksi 2026/2027
               </p>
             </div>
           </div>
-          <span className="text-xs font-mono text-sky-300 bg-sky-500/10 border border-sky-500/20 px-3 py-1 rounded-lg">
+          <span className="text-xs font-mono text-sky-400 bg-sky-500/10 border border-sky-500/20 px-3 py-1 rounded-lg">
             Menampilkan {filteredSimpul.length.toLocaleString("id-ID")} dari 1.212 Simpul
           </span>
         </div>
-        <EChartsWrapper option={top12NodesOption} height="390px" />
+        <EChartBox option={top12NodesOption} height="390px" />
       </div>
 
       {/* Searchable & Paginated Table of All 1,212 Simpul */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="rounded-xl bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
           <div className="flex items-center gap-2.5">
             <Building2 className="w-5 h-5 text-sky-400" />
             <div>
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Tabel Direktori Lengkap 1.212 Simpul Pantauan Nasional
               </h3>
-              <p className="text-xs text-slate-400">
-                Cari nama bandara, stasiun, terminal, atau pelabuhan beserta proyeksi beban puncak harian (H-1)
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Cari nama bandara, stasiun, terminal, atau pelabuhan beserta proyeksi penumpang & sarana
               </p>
             </div>
           </div>
@@ -294,48 +321,54 @@ export function SimpulDirectoryWorkspace({ bundle }: Props) {
                   Proyeksi 2026/2027
                 </th>
                 <th className="py-3 px-3 font-semibold text-right">Pertumbuhan</th>
-                <th className="py-3 px-3 font-semibold text-right">Est. Puncak H-1</th>
+                <th className="py-3 px-3 font-semibold text-right">Proyeksi Sarana</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
               {paginatedRows.map((s) => (
                 <tr
-                  key={`${s.kategori_moda}-${s.kode_simpul}-${s.rank_nasional}`}
+                  key={`${s.simpul_id}-${s.rank_nasional}`}
                   className="hover:bg-slate-800/50 transition-colors"
                 >
-                  <td className="py-2.5 px-3 font-mono text-slate-400">#{s.rank_nasional}</td>
+                  <td className="py-2.5 px-3 font-mono text-slate-400">
+                    #{s.rank_nasional}
+                  </td>
                   <td className="py-2.5 px-3 font-mono font-semibold text-sky-300">
                     {s.kode_simpul}
                   </td>
-                  <td className="py-2.5 px-3 font-medium text-white">{s.nama_simpul}</td>
+                  <td className="py-2.5 px-3 font-medium text-white">
+                    {s.nama_simpul}
+                  </td>
                   <td className="py-2.5 px-3">
                     <span
                       className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
-                        MODA_META[s.kategori_moda]?.badgeBg || ""
+                        MODA_META[s.kode_moda]?.badgeBg || ""
                       }`}
                     >
-                      {s.kategori_moda}
+                      {s.kode_moda}
                     </span>
                   </td>
                   <td className="py-2.5 px-3 text-slate-300">{s.provinsi}</td>
                   <td className="py-2.5 px-3 text-right font-mono text-slate-300">
-                    {s.realisasi_2025.toLocaleString("id-ID")}
+                    {s.realisasi_pnp_2025.toLocaleString("id-ID")}
                   </td>
                   <td className="py-2.5 px-3 text-right font-mono font-bold text-amber-300">
-                    {s.proyeksi_2026.toLocaleString("id-ID")}
+                    {s.proyeksi_pnp_2026.toLocaleString("id-ID")}
                   </td>
                   <td className="py-2.5 px-3 text-right font-mono">
                     <span
                       className={
-                        s.growth_pct >= 0 ? "text-emerald-400" : "text-rose-400"
+                        s.pertumbuhan_yoy_pct >= 0
+                          ? "text-emerald-400"
+                          : "text-rose-400"
                       }
                     >
-                      {s.growth_pct >= 0 ? "+" : ""}
-                      {s.growth_pct.toFixed(2).replace(".", ",")}%
+                      {s.pertumbuhan_yoy_pct >= 0 ? "+" : ""}
+                      {s.pertumbuhan_yoy_pct.toFixed(2).replace(".", ",")}%
                     </span>
                   </td>
                   <td className="py-2.5 px-3 text-right font-mono text-sky-300">
-                    {s.puncak_harian_estimasi.toLocaleString("id-ID")}
+                    {s.proyeksi_sarana_2026.toLocaleString("id-ID")}
                   </td>
                 </tr>
               ))}
@@ -347,7 +380,8 @@ export function SimpulDirectoryWorkspace({ bundle }: Props) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 pt-3 border-t border-slate-800/80 text-xs text-slate-400">
           <div>
             Menampilkan{" "}
-            <span className="text-white font-semibold">{paginatedRows.length}</span> dari{" "}
+            <span className="text-white font-semibold">{paginatedRows.length}</span>{" "}
+            dari{" "}
             <span className="text-sky-300 font-semibold">
               {filteredSimpul.length.toLocaleString("id-ID")}
             </span>{" "}
