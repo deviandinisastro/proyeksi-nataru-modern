@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { EChartsWrapper, echarts_Gradient } from "../charts/EChartsWrapper";
+import { EChartsWrapper, echarts_Gradient } from "../EChartsWrapper";
 import { MudikHubBundle } from "../../types/mudikhub";
 import {
   TrendingUp,

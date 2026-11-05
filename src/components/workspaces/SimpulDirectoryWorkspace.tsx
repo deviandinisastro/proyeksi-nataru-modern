@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { MudikHubBundle } from "../../types/mudikhub";
-import { EChartsWrapper } from "../charts/EChartsWrapper";
+import { EChartsWrapper } from "../EChartsWrapper";
 import {
   Search,
   Filter,
