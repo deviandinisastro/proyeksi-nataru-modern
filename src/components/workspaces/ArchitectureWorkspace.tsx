@@ -26,46 +26,46 @@ export default function ArchitectureWorkspace({ data }: ArchitectureWorkspacePro
 
   const syllabusActivities = [
     {
-      no: "Aktivitas 1",
+      no: "Tahap 1",
       judul: "Analisis Kebutuhan Sistem & Perumusan Indikator Data (SRS & KPI)",
       capaian: "Merumuskan 3 KPI utama (Volume Pergerakan Harian, Pertumbuhan YoY +3,44%, dan Load Factor 81,36%), Use Case Diagram, serta SRS.",
       wujud: "Modul Ikhtisar Eksekutif Posko (KPI Cards 1–3 & Navigasi Terpadu MudikHub)",
-      status: "100% Terpenuhi",
+      status: "Tervalidasi",
     },
     {
-      no: "Aktivitas 2",
+      no: "Tahap 2",
       judul: "Perencanaan Jadwal (WBS) & Perancangan Struktur Basis Data (Star Schema & SDD)",
       capaian: "Memisahkan Tabel Fakta (fact_pergerakan_posko) dan 4 Tabel Dimensi (Waktu, Moda, Event, Wilayah 1.212 Simpul) beserta Kamus Data.",
       wujud: "Direktori /public/data/star_schema/ & Modul Kamus Data Interaktif",
-      status: "100% Terpenuhi",
+      status: "Tervalidasi",
     },
     {
-      no: "Aktivitas 3",
+      no: "Tahap 3",
       judul: "Pembersihan Data Historis (ETL Python) & Integrasi Basis Data Dinamis",
-      capaian: "Ekstraksi dataset Web Portal STRATEGI Kemenhub, penghapusan 2 baris 'nan' Udara (259 -> 257 Bandara), dan validasi 1.212 simpul.",
+      capaian: "Ekstraksi dataset Portal STRATEGI Kemenhub (https://strategi.kemenhub.go.id/), penghapusan 2 baris 'nan' Udara (259 -> 257 Bandara), dan validasi 1.212 simpul.",
       wujud: "Script backend_etl/etl_strategi_mudikhub.py & Bundel JSON Sinkronisasi",
-      status: "100% Terpenuhi",
+      status: "Tervalidasi",
     },
     {
-      no: "Aktivitas 4",
+      no: "Tahap 4",
       judul: "Penerapan Logika Pendukung Keputusan (Metode SAW) & Skenario Armada",
       capaian: "Komputasi normalisasi matriks R dan skor preferensi Vᵢ untuk merangking prioritas moda & estimasi penambahan armada.",
       wujud: "Modul SPK Metode SAW (Opsi B: 3 Skenario Terukur & Opsi A: Tabel Fix)",
-      status: "100% Terpenuhi",
+      status: "Tervalidasi",
     },
     {
-      no: "Aktivitas 5",
+      no: "Tahap 5",
       judul: "Perancangan Tampilan Dashboard & Elemen Visual Web Multimedia (Web GIS)",
       capaian: "UI/UX responsif Next.js 14, palet siaga Hijau-Kuning-Merah, grafik ECharts interaktif, dan Peta Web GIS 1.212 Simpul.",
       wujud: "Seluruh 6 Workspace Interaktif Portal MudikHub Modern",
-      status: "100% Terpenuhi",
+      status: "Tervalidasi",
     },
     {
-      no: "Aktivitas 6",
-      judul: "Pengujian Fungsi Aplikasi (Black-Box Testing) & Buku Panduan (User Manual)",
-      capaian: "Validasi fungsionalitas seluruh filter, grafik, peta, dan tab skenario SAW tanpa galat (zero bug) serta kesiapan serah terima.",
+      no: "Tahap 6",
+      judul: "Pengujian Fungsi Aplikasi (Black-Box Testing) & Dokumentasi Operasional",
+      capaian: "Validasi fungsionalitas seluruh filter, grafik, peta, dan tab skenario SAW tanpa galat (zero bug) serta kesiapan operasional.",
       wujud: "Matriks Uji Black-Box (Lolos 100%) & Dokumentasi Teknis Operasional",
-      status: "100% Terpenuhi",
+      status: "Tervalidasi",
     },
   ];
 
@@ -81,7 +81,7 @@ export default function ArchitectureWorkspace({ data }: ArchitectureWorkspacePro
           Rancang Bangun Basis Data Star Schema, Kamus Data & Audit Kualitas ETL
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Dokumentasi teknis pemenuhan kompetensi Rekayasa Sistem Informasi (Universitas Gunadarma) pada Tim Pengelolaan Data Pusdatin Kemenhub RI.
+          Dokumentasi arsitektur basis data multidimensi dan pipeline pembersihan data Portal STRATEGI Kemenhub (https://strategi.kemenhub.go.id/).
         </p>
       </div>
 
@@ -222,15 +222,15 @@ export default function ArchitectureWorkspace({ data }: ArchitectureWorkspacePro
         </div>
       </div>
 
-      {/* MATRIKS PEMENUHAN 6 AKTIVITAS SILABUS MAGANG S1 SISTEM INFORMASI GUNADARMA */}
+      {/* MATRIKS SIKLUS PENGEMBANGAN & VALIDASI MODUL SISTEM */}
       <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="mb-4">
           <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <ClipboardCheck className="w-4 h-4 text-emerald-500" />
-            Matriks Pemenuhan 6 Aktivitas Silabus Magang S1 Sistem Informasi Universitas Gunadarma
+            Matriks Siklus Pengembangan & Validasi Fungsionalitas Sistem (SDLC)
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Verifikasi kesesuaian fitur aplikasi terhadap indikator penilaian konversi SKS & standar operasional Pusdatin Kemenhub RI
+            Verifikasi kesesuaian modul arsitektur data, algoritma SPK, dan pengujian fungsionalitas operasional Pusdatin Kemenhub RI
           </p>
         </div>
 
@@ -238,10 +238,10 @@ export default function ArchitectureWorkspace({ data }: ArchitectureWorkspacePro
           <table className="w-full text-left border-collapse text-xs">
             <thead className="bg-slate-100 dark:bg-slate-800 text-[11px] uppercase text-slate-600 dark:text-slate-300">
               <tr>
-                <th className="py-3 px-3 font-bold">Tahapan Silabus</th>
-                <th className="py-3 px-3 font-bold">Nama Aktivitas Magang</th>
-                <th className="py-3 px-3 font-bold">Capaian Pembelajaran yang Dipenuhi</th>
-                <th className="py-3 px-3 font-bold">Implementasi pada Web Modern</th>
+                <th className="py-3 px-3 font-bold">Tahapan</th>
+                <th className="py-3 px-3 font-bold">Komponen Rekayasa Sistem</th>
+                <th className="py-3 px-3 font-bold">Spesifikasi Teknis & Fungsional</th>
+                <th className="py-3 px-3 font-bold">Implementasi Modul</th>
                 <th className="py-3 px-3 text-center font-bold">Status</th>
               </tr>
             </thead>

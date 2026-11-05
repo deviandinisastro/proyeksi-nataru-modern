@@ -217,7 +217,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 text-sky-200 text-xs font-semibold mb-2">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              Sumber Data Resmi: Web Portal STRATEGI Kemenhub & Metabase BI Pusdatin
+              Sumber Data Resmi: Portal STRATEGI Kemenhub (https://strategi.kemenhub.go.id/)
             </div>
             <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">
               Ikhtisar Eksekutif Proyeksi & Kesiagaan Posko Angkutan Nataru 2026/2027
