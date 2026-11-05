@@ -17,6 +17,7 @@ import {
   Database,
   Sun,
   Moon,
+  ShieldCheck,
   Building2,
   PanelLeftClose,
   PanelLeftOpen,
@@ -39,13 +40,9 @@ export default function MudikHubPage() {
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("overview");
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
-  const [sidebarHovered, setSidebarHovered] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [clockText, setClockText] = useState<string>("");
-
-  // Sidebar terbuka jika tidak di-collapse ATAU sedang di-hover kursor
-  const isSidebarExpanded = !sidebarCollapsed || sidebarHovered;
 
   useEffect(() => {
     const root = document.documentElement;
@@ -199,85 +196,55 @@ export default function MudikHubPage() {
         />
       )}
 
-      {/* SIDEBAR KIRI MODERN: OTOMATIS TERBUKA SEMENTARA SAAT HOVER & TERBUKA TETAP SAAT DIKLIK */}
+      {/* SIDEBAR KIRI MODERN: KLIK AREA SIDEBAR UNTUK MEMBUKA SAAT TERTUTUP */}
       <aside
-        onMouseEnter={() => {
-          if (sidebarCollapsed) setSidebarHovered(true);
-        }}
-        onMouseLeave={() => {
-          if (sidebarCollapsed) setSidebarHovered(false);
-        }}
         onClick={() => {
           if (sidebarCollapsed) {
             setSidebarCollapsed(false);
-            setSidebarHovered(false);
           }
         }}
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 ${
-          isSidebarExpanded ? "lg:w-72" : "lg:w-20"
-        } ${
-          sidebarCollapsed && sidebarHovered ? "lg:shadow-2xl lg:shadow-sky-950/50" : ""
-        } ${
-          sidebarCollapsed ? "cursor-pointer" : ""
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-200 shrink-0 ${
+          sidebarCollapsed ? "lg:w-20 cursor-pointer" : "lg:w-72"
         } ${
           mobileMenuOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        {/* BAGIAN ATAS SIDEBAR: BRANDING PUSDATIN & MENU NAVIGASI */}
+        {/* BAGIAN ATAS SIDEBAR: LOGO & JUDUL (KLIK UNTUK KE MENU UTAMA) + DAFTAR MENU */}
         <div className="flex flex-col flex-1 min-h-0">
-          {/* HEADER BRAND SIDEBAR */}
+          {/* HEADER BRAND SIDEBAR (TANPA TOMBOL COLLAPSE DI SAMPING JUDUL) */}
           <div
-            className={`h-16 flex items-center border-b border-slate-200 dark:border-slate-800 shrink-0 transition-all duration-300 ${
-              isSidebarExpanded ? "px-4 justify-between" : "px-2 justify-center"
+            className={`h-16 flex items-center border-b border-slate-200 dark:border-slate-800 shrink-0 ${
+              sidebarCollapsed ? "px-2 justify-center" : "px-4 justify-between"
             }`}
           >
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gov-navy via-sky-700 to-amber-500 flex items-center justify-center text-white font-black text-sm shadow-md shrink-0">
-                MH
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTab("overview");
+                setMobileMenuOpen(false);
+              }}
+              title="Kembali ke Menu Utama (Ikhtisar Eksekutif Posko)"
+              className={`flex items-center gap-3 overflow-hidden text-left group hover:opacity-95 transition ${
+                sidebarCollapsed ? "justify-center" : "min-w-0 flex-1"
+              }`}
+            >
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gov-navy via-sky-700 to-amber-500 flex items-center justify-center text-white shadow-md shrink-0 group-hover:scale-105 transition-transform">
+                <ShieldCheck className="w-5 h-5 text-white" />
               </div>
-              {isSidebarExpanded && (
-                <div className="truncate transition-opacity duration-200">
-                  <div className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-                    MudikHub
-                  </div>
-                  <div className="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+              {!sidebarCollapsed && (
+                <div className="truncate">
+                  <div className="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider truncate">
                     Pusdatin Kemenhub RI
+                  </div>
+                  <div className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight truncate">
+                    MudikHub Nataru
                   </div>
                 </div>
               )}
-            </div>
+            </button>
 
-            {/* Tombol Kecilkan / Sematkan Sidebar saat terbuka */}
-            {isSidebarExpanded && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (sidebarCollapsed) {
-                    // Jika sedang hover sementara, klik tombol ini akan menyematkan tetap terbuka
-                    setSidebarCollapsed(false);
-                    setSidebarHovered(false);
-                  } else {
-                    // Jika sedang terbuka tetap, klik tombol ini akan menutup sidebar
-                    setSidebarCollapsed(true);
-                    setSidebarHovered(false);
-                  }
-                }}
-                className="hidden lg:flex p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                title={
-                  sidebarCollapsed
-                    ? "Klik untuk membuka sidebar secara tetap"
-                    : "Kecilkan Sidebar"
-                }
-              >
-                {sidebarCollapsed ? (
-                  <PanelLeftOpen className="w-4 h-4 text-sky-500" />
-                ) : (
-                  <PanelLeftClose className="w-4 h-4" />
-                )}
-              </button>
-            )}
-
-            {/* Tombol Tutup Mobile */}
+            {/* Tombol Tutup Khusus Layar Mobile */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -293,7 +260,7 @@ export default function MudikHubPage() {
           <div className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
             {navGroups.map((group) => (
               <div key={group.groupTitle}>
-                {isSidebarExpanded && (
+                {!sidebarCollapsed && (
                   <div className="px-2.5 mb-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate">
                     {group.groupTitle}
                   </div>
@@ -305,15 +272,20 @@ export default function MudikHubPage() {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setActiveTab(item.id);
                           setMobileMenuOpen(false);
                         }}
-                        title={!isSidebarExpanded ? `${item.label} — ${item.sub}` : undefined}
-                        className={`flex items-center rounded-xl text-left transition-all duration-200 ${
-                          isSidebarExpanded
-                            ? "w-full gap-3 px-3 py-2.5"
-                            : "w-11 h-11 mx-auto justify-center px-0"
+                        title={
+                          sidebarCollapsed
+                            ? `${item.label} — ${item.sub}`
+                            : undefined
+                        }
+                        className={`flex items-center rounded-xl text-left transition-all ${
+                          sidebarCollapsed
+                            ? "w-11 h-11 mx-auto justify-center px-0"
+                            : "w-full gap-3 px-3 py-2.5"
                         } ${
                           active
                             ? "bg-gov-navy text-white shadow-sm dark:bg-sky-600"
@@ -322,22 +294,28 @@ export default function MudikHubPage() {
                       >
                         <Icon
                           className={`w-4 h-4 shrink-0 ${
-                            active ? "text-white" : "text-sky-600 dark:text-sky-400"
+                            active
+                              ? "text-white"
+                              : "text-sky-600 dark:text-sky-400"
                           }`}
                         />
-                        {isSidebarExpanded && (
+                        {!sidebarCollapsed && (
                           <div className="flex-1 min-w-0">
-                            <div className="text-xs font-bold truncate">{item.label}</div>
+                            <div className="text-xs font-bold truncate">
+                              {item.label}
+                            </div>
                             <div
                               className={`text-[10px] truncate ${
-                                active ? "text-sky-100" : "text-slate-400 dark:text-slate-500"
+                                active
+                                  ? "text-sky-100"
+                                  : "text-slate-400 dark:text-slate-500"
                               }`}
                             >
                               {item.sub}
                             </div>
                           </div>
                         )}
-                        {isSidebarExpanded && item.badge && (
+                        {!sidebarCollapsed && item.badge && (
                           <span
                             className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold shrink-0 ${
                               active
@@ -357,20 +335,42 @@ export default function MudikHubPage() {
           </div>
         </div>
 
-        {/* BAGIAN BAWAH SIDEBAR: KARTU SUMBER DATA (SAAT TERBUKA) ATAU TOMBOL BUKA SIDEBAR (SAAT TERTUTUP) */}
-        <div className="p-3 border-t border-slate-200 dark:border-slate-800 shrink-0">
-          {isSidebarExpanded ? (
+        {/* BAGIAN BAWAH SIDEBAR: TOMBOL CIUTKAN / BUKA MENU & KARTU STRATEGI KEMENHUB */}
+        <div className="p-3 border-t border-slate-200 dark:border-slate-800 shrink-0 space-y-2.5">
+          {/* Tombol Ciutkan / Buka Sidebar (Selalu di Bawah) */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSidebarCollapsed(!sidebarCollapsed);
+            }}
+            title={
+              sidebarCollapsed
+                ? "Buka Sidebar"
+                : "Ciutkan Menu Sidebar"
+            }
+            className={`hidden lg:flex items-center rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-800/90 hover:bg-sky-600 hover:text-white hover:border-sky-500 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all ${
+              sidebarCollapsed
+                ? "w-11 h-11 mx-auto justify-center"
+                : "w-full px-3 py-2 justify-center gap-2"
+            }`}
+          >
+            {sidebarCollapsed ? (
+              <PanelLeftOpen className="w-4 h-4 text-sky-500 group-hover:text-white" />
+            ) : (
+              <>
+                <PanelLeftClose className="w-4 h-4 text-sky-500" />
+                <span>Ciutkan Menu</span>
+              </>
+            )}
+          </button>
+
+          {/* Kartu Sumber Data Resmi (Hanya Tampil Saat Sidebar Terbuka) */}
+          {!sidebarCollapsed && (
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80">
-              <div className="flex items-center justify-between gap-1.5">
-                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-800 dark:text-slate-200">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Portal STRATEGI Kemenhub</span>
-                </div>
-                {sidebarCollapsed && (
-                  <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400">
-                    Klik untuk Tetap Buka
-                  </span>
-                )}
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-800 dark:text-slate-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Portal STRATEGI Kemenhub</span>
               </div>
               <a
                 href="https://strategi.kemenhub.go.id/"
@@ -386,18 +386,6 @@ export default function MudikHubPage() {
                 1.212 Simpul Nasional • MAPE 6,93%
               </div>
             </div>
-          ) : (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setSidebarCollapsed(false);
-                setSidebarHovered(false);
-              }}
-              title="Buka Sidebar Secara Tetap"
-              className="w-11 h-11 mx-auto flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800/90 hover:bg-sky-600 hover:text-white text-sky-600 dark:text-sky-400 border border-slate-200 dark:border-slate-700 transition-all shadow-sm"
-            >
-              <PanelLeftOpen className="w-4 h-4" />
-            </button>
           )}
         </div>
       </aside>
