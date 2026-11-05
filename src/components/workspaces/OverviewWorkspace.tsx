@@ -109,7 +109,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
           fontFamily: "Plus Jakarta Sans, sans-serif",
         },
       },
-      grid: { top: 42, right: 20, bottom: 48, left: 68 },
+      grid: { top: 62, right: 24, bottom: 48, left: 68 },
       xAxis: {
         type: "category",
         data: xDays,
@@ -123,6 +123,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
       },
       yAxis: {
         type: "value",
+        max: (val: { max: number }) => Math.ceil(val.max * 1.15),
         axisLabel: {
           color: textColor,
           fontSize: 11,
@@ -166,8 +167,24 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
           lineStyle: { width: 3.2 },
           symbolSize: 8,
           markPoint: {
+            symbol: "roundRect",
+            symbolSize: [54, 22],
+            symbolOffset: [0, -18],
+            itemStyle: {
+              color: "#DC2626",
+              borderColor: "#ffffff",
+              borderWidth: 1.5,
+              shadowBlur: 6,
+              shadowColor: "rgba(220, 38, 38, 0.35)",
+            },
             data: [{ type: "max", name: "Puncak Tertinggi" }],
-            label: { fontSize: 10, fontWeight: "bold", formatter: "Puncak" },
+            label: {
+              fontSize: 10,
+              fontWeight: "bold",
+              color: "#ffffff",
+              fontFamily: "Plus Jakarta Sans, sans-serif",
+              formatter: "Puncak",
+            },
           },
         },
       ],
@@ -236,7 +253,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
       {/* BANNER IDENTITAS EKSEKUTIF */}
       <div className="rounded-2xl bg-gradient-to-r from-[#002554] via-[#003882] to-[#0066CC] p-6 text-white shadow-lg border border-sky-700/40">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-sky-100 text-xs font-semibold mb-2">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
               Sumber Data Resmi: Portal STRATEGI Kemenhub (https://strategi.kemenhub.go.id/)
@@ -244,12 +261,12 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
             <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">
               Ikhtisar Eksekutif Proyeksi & Kesiagaan Posko Angkutan Nataru 2026/2027
             </h1>
-            <p className="text-xs md:text-sm text-sky-100/90 mt-1 max-w-3xl">
+            <p className="text-xs md:text-[13px] text-sky-100/90 mt-1.5 xl:whitespace-nowrap">
               Sistem Pendukung Keputusan (DSS) Terpadu Lintas 5 Moda Penumpang, Koridor Tol & Arteri pada{" "}
               <span className="font-bold text-amber-300">1.212 Simpul Pantauan Nasional</span> (Periode H-7 s.d H+10).
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 shrink-0">
+          <div className="flex flex-col gap-2 shrink-0 sm:min-w-[230px]">
             <div className="px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-right">
               <div className="text-[10px] uppercase tracking-wider text-sky-200">Model Champion</div>
               <div className="text-xs font-bold text-white">Damped Holt-Winters (φ=0,98)</div>
@@ -262,13 +279,13 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
         </div>
       </div>
 
-      {/* BARIS 1: 3 KPI UTAMA + 1 KPI PUNCAK ARUS */}
+      {/* BARIS 1: 4 KARTU INDIKATOR UTAMA POSKO */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {/* KPI 1: VOLUME PERGERAKAN PENUMPANG & SARANA */}
+        {/* KARTU 1: VOLUME PERGERAKAN PENUMPANG & SARANA */}
         <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              KPI 1 • Volume Pergerakan
+              Volume Pergerakan
             </span>
             <div className="p-2 rounded-lg bg-[#EFF6FF] dark:bg-sky-950 text-[#003882] dark:text-sky-400">
               <Users className="w-4 h-4" />
@@ -289,11 +306,11 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
           </div>
         </div>
 
-        {/* KPI 2: PERBANDINGAN PERTUMBUHAN ANTAR-TAHUN (YoY) */}
+        {/* KARTU 2: PERBANDINGAN PERTUMBUHAN ANTAR-TAHUN (YoY) */}
         <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              KPI 2 • Laju Pertumbuhan YoY
+              Laju Pertumbuhan YoY
             </span>
             <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
               <TrendingUp className="w-4 h-4" />
@@ -316,11 +333,11 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
           </div>
         </div>
 
-        {/* KPI 3: RASIO KETERISIAN SARANA (LOAD FACTOR) */}
+        {/* KARTU 3: RASIO KETERISIAN SARANA (LOAD FACTOR) */}
         <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              KPI 3 • Rasio Keterisian (LF)
+              Rasio Keterisian (LF)
             </span>
             <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
               <Gauge className="w-4 h-4" />
@@ -345,11 +362,11 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
           </div>
         </div>
 
-        {/* KPI 4: TITIK PUNCAK MUDIK & ARUS BALIK */}
+        {/* KARTU 4: TITIK PUNCAK MUDIK & ARUS BALIK */}
         <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Indikator Puncak Posko (Bimodal)
+              Indikator Puncak Posko
             </span>
             <div className="p-2 rounded-lg bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400">
               <AlertTriangle className="w-4 h-4" />
@@ -576,8 +593,9 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
             </div>
           </div>
 
-          <div className="overflow-y-auto flex-1 min-h-0 max-h-[550px] rounded-xl border border-slate-200 dark:border-slate-800">
-            <table className="w-full text-left border-collapse text-xs">
+          <div className="relative flex-1 min-h-[540px]">
+            <div className="xl:absolute xl:inset-0 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800">
+              <table className="w-full text-left border-collapse text-xs">
               <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800 text-[10px] uppercase text-slate-500 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 z-10">
                 <tr>
                   <th className="py-2.5 px-3 font-bold">Hari Posko</th>
@@ -646,6 +664,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       </div>
