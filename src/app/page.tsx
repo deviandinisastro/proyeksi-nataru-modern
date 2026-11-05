@@ -38,7 +38,7 @@ type WorkspaceTab =
 export default function MudikHubPage() {
   const [bundle, setBundle] = useState<MudikHubBundle | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("overview");
-  const [darkMode, setDarkMode] = useState<boolean>(true);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);

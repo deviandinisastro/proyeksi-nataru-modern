@@ -5,16 +5,62 @@
 @import "leaflet/dist/leaflet.css";
 @import "katex/dist/katex.min.css";
 
+:root {
+  /* INA Digital Official Palette (Light Mode) */
+  --color-gov-navy: #003882;        /* Kemenhub Primary Deep Navy */
+  --color-gov-navy-dark: #002554;
+  --color-gov-azure: #0066CC;       /* INA Digital Primary Blue */
+  --color-gov-azure-light: #EFF6FF;
+  --color-canvas-bg: #F8FAFC;       /* Slate 50 Neutral Clean */
+  --color-card-bg: #FFFFFF;
+  --color-card-border: #E2E8F0;     /* Slate 200 */
+  --color-text-main: #0F172A;       /* Slate 900 */
+  --color-text-muted: #475569;      /* Slate 600 */
+
+  /* Status Colors */
+  --color-status-success: #059669;  /* Emerald 600 */
+  --color-status-warning: #D97706;  /* Amber 600 */
+  --color-status-danger: #DC2626;   /* Crimson 600 */
+}
+
+html.dark {
+  --color-gov-navy: #60A5FA;
+  --color-gov-navy-dark: #3B82F6;
+  --color-gov-azure: #60A5FA;
+  --color-gov-azure-light: #1E293B;
+  --color-canvas-bg: #0B1120;       /* Slate 950 Dark Canvas */
+  --color-card-bg: #131D31;         /* Deep Slate 900 Surface */
+  --color-card-border: #1E293B;     /* Slate 800 */
+  --color-text-main: #F8FAFC;       /* Slate 50 */
+  --color-text-muted: #CBD5E1;      /* Slate 300 - High Contrast */
+}
+
 @layer base {
   body {
-    @apply antialiased selection:bg-sky-500 selection:text-white;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--color-canvas-bg);
+    color: var(--color-text-main);
+    -webkit-font-smoothing: antialiased;
+    @apply selection:bg-[#388AEB] selection:text-white;
   }
 }
 
-/* Custom sleek scrollbars */
+/* PENGATURAN FONT ANGKA INA DIGITAL: MODERN TABULAR NUMBERS (BUKAN COURIER / TYPEWRITER) */
+.font-mono,
+.num-mono,
+.num-tabular,
+table td {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  font-variant-numeric: tabular-nums lining-nums;
+  -moz-font-feature-settings: 'tnum', 'lnum';
+  -webkit-font-feature-settings: 'tnum', 'lnum';
+  font-feature-settings: 'tnum', 'lnum';
+}
+
+/* Custom sleek scrollbars (INA Digital style) */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -22,10 +68,14 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.45);
-  border-radius: 9999px;
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.7);
+  background: #94A3B8;
 }

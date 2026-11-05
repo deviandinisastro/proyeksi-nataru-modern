@@ -9,14 +9,7 @@ import {
   Gauge,
   AlertTriangle,
   Calendar,
-  Plane,
-  Train,
-  Ship,
-  Bus,
-  Anchor,
   CheckCircle2,
-  ShieldAlert,
-  Clock,
 } from "lucide-react";
 
 interface OverviewWorkspaceProps {
@@ -25,6 +18,16 @@ interface OverviewWorkspaceProps {
 }
 
 const fmt = (n: number) => n.toLocaleString("id-ID");
+
+// Palet Resmi INA Digital untuk 5 Moda Penumpang
+const INA_MODA_COLORS: Record<string, string> = {
+  "Angkutan Udara": "#0284C7",
+  "Kereta Api": "#EA580C",
+  "Angkutan SDP": "#7C3AED",
+  "Angkutan Penyeberangan": "#7C3AED",
+  "Angkutan Jalan": "#059669",
+  "Angkutan Laut": "#003882",
+};
 
 export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceProps) {
   const [selectedModa, setSelectedModa] = useState<string>("TOTAL SELURUH MODA");
@@ -77,7 +80,11 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
         trigger: "axis",
         backgroundColor: darkMode ? "#0f172a" : "#ffffff",
         borderColor: darkMode ? "#334155" : "#cbd5e1",
-        textStyle: { color: darkMode ? "#f8fafc" : "#0f172a", fontSize: 12 },
+        textStyle: {
+          color: darkMode ? "#f8fafc" : "#0f172a",
+          fontSize: 12,
+          fontFamily: "Plus Jakarta Sans, sans-serif",
+        },
         formatter: (params: any[]) => {
           if (!params || !params.length) return "";
           const idx = params[0].dataIndex;
@@ -95,13 +102,23 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
       },
       legend: {
         top: 0,
-        textStyle: { color: textColor, fontSize: 12, fontWeight: 600 },
+        textStyle: {
+          color: textColor,
+          fontSize: 12,
+          fontWeight: 600,
+          fontFamily: "Plus Jakarta Sans, sans-serif",
+        },
       },
       grid: { top: 42, right: 20, bottom: 48, left: 68 },
       xAxis: {
         type: "category",
         data: xDays,
-        axisLabel: { color: textColor, fontSize: 11, interval: 0 },
+        axisLabel: {
+          color: textColor,
+          fontSize: 11,
+          interval: 0,
+          fontFamily: "Plus Jakarta Sans, sans-serif",
+        },
         axisLine: { lineStyle: { color: gridColor } },
       },
       yAxis: {
@@ -109,6 +126,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
         axisLabel: {
           color: textColor,
           fontSize: 11,
+          fontFamily: "Plus Jakarta Sans, sans-serif",
           formatter: (val: number) => {
             if (val >= 1000000) return `${(val / 1000000).toFixed(1)} Jt`;
             if (val >= 1000) return `${(val / 1000).toFixed(0)} Rb`;
@@ -132,11 +150,11 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
           type: "line",
           smooth: true,
           data: v2025,
-          itemStyle: { color: "#0284c7" },
+          itemStyle: { color: "#0066CC" },
           lineStyle: { width: 2.5 },
           symbolSize: 6,
           areaStyle: {
-            color: echarts_Gradient("#0284c7", 0.14, 0.01),
+            color: echarts_Gradient("#0066CC", 0.14, 0.01),
           },
         },
         {
@@ -144,13 +162,11 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
           type: "line",
           smooth: true,
           data: v2026,
-          itemStyle: { color: "#f59e0b" },
+          itemStyle: { color: "#D97706" },
           lineStyle: { width: 3.2 },
           symbolSize: 8,
           markPoint: {
-            data: [
-              { type: "max", name: "Puncak Tertinggi" },
-            ],
+            data: [{ type: "max", name: "Puncak Tertinggi" }],
             label: { fontSize: 10, fontWeight: "bold", formatter: "Puncak" },
           },
         },
@@ -158,7 +174,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
     };
   }, [activeDailyRows, darkMode, textColor, gridColor, metricType, selectedModa]);
 
-  // 2. ECharts Option: Donut Pangsa Pasar 5 Moda
+  // 2. ECharts Option: Donut Pangsa Pasar 5 Moda (INA Digital Colors & Enlarged Ring)
   const donutOption = useMemo(() => {
     return {
       backgroundColor: "transparent",
@@ -166,9 +182,13 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
         trigger: "item",
         backgroundColor: darkMode ? "#0f172a" : "#ffffff",
         borderColor: darkMode ? "#334155" : "#cbd5e1",
-        textStyle: { color: darkMode ? "#f8fafc" : "#0f172a", fontSize: 12 },
+        textStyle: {
+          color: darkMode ? "#f8fafc" : "#0f172a",
+          fontSize: 12,
+          fontFamily: "Plus Jakarta Sans, sans-serif",
+        },
         formatter: (p: any) =>
-          `<b>${p.name}</b><br/>Proyeksi 2026: <b>${fmt(p.value)} orang</b><br/>Pangsa Pasar: <b>${p.percent}%</b>`,
+          `<b>${p.name}</b><br/>Proyeksi 2026: <b>${fmt(p.value)} orang</b><br/>Pangsa Pasar: <b>${Number(p.percent).toFixed(2).replace(".", ",")}%</b>`,
       },
       series: [
         {
@@ -185,15 +205,17 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
           label: {
             show: true,
             position: "inside",
-            formatter: (params: any) => `${Number(params.percent).toFixed(1).replace(".", ",")}%`,
+            formatter: (params: any) =>
+              `${Number(params.percent).toFixed(1).replace(".", ",")}%`,
             fontSize: 11,
             fontWeight: "bold",
+            fontFamily: "Plus Jakarta Sans, sans-serif",
             color: "#ffffff",
           },
           data: data.moda_penumpang_summary.map((m) => ({
             name: m.moda,
             value: m.proyeksi_pnp_2026,
-            itemStyle: { color: m.warna },
+            itemStyle: { color: INA_MODA_COLORS[m.moda] || m.warna },
           })),
         },
       ],
@@ -212,35 +234,35 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
   return (
     <div className="space-y-6">
       {/* BANNER IDENTITAS EKSEKUTIF */}
-      <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-gov-navy to-sky-900 p-6 text-white shadow-lg border border-sky-800/40">
+      <div className="rounded-2xl bg-gradient-to-r from-[#002554] via-[#003882] to-[#0066CC] p-6 text-white shadow-lg border border-sky-700/40">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 text-sky-200 text-xs font-semibold mb-2">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-sky-100 text-xs font-semibold mb-2">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
               Sumber Data Resmi: Portal STRATEGI Kemenhub (https://strategi.kemenhub.go.id/)
             </div>
             <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">
               Ikhtisar Eksekutif Proyeksi & Kesiagaan Posko Angkutan Nataru 2026/2027
             </h1>
-            <p className="text-xs md:text-sm text-slate-300 mt-1 max-w-3xl">
+            <p className="text-xs md:text-sm text-sky-100/90 mt-1 max-w-3xl">
               Sistem Pendukung Keputusan (DSS) Terpadu Lintas 5 Moda Penumpang, Koridor Tol & Arteri pada{" "}
               <span className="font-bold text-amber-300">1.212 Simpul Pantauan Nasional</span> (Periode H-7 s.d H+10).
             </p>
           </div>
           <div className="flex flex-wrap gap-2 shrink-0">
-            <div className="px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur border border-white/15 text-right">
+            <div className="px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-right">
               <div className="text-[10px] uppercase tracking-wider text-sky-200">Model Champion</div>
               <div className="text-xs font-bold text-white">Damped Holt-Winters (φ=0,98)</div>
             </div>
-            <div className="px-3.5 py-2 rounded-xl bg-emerald-500/20 backdrop-blur border border-emerald-400/30 text-right">
+            <div className="px-3.5 py-2 rounded-xl bg-emerald-500/20 backdrop-blur border border-emerald-400/35 text-right">
               <div className="text-[10px] uppercase tracking-wider text-emerald-200">MAPE Agregat Nasional</div>
-              <div className="text-sm font-extrabold text-emerald-300">6,93% (Akurasi 98,04%)</div>
+              <div className="text-sm font-extrabold text-emerald-300 num-tabular">6,93% (Akurasi 98,04%)</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* BARIS 1: 3 KPI UTAMA SILABUS GUNADARMA (AKTIVITAS 1) + 1 KPI PUNCAK ARUS */}
+      {/* BARIS 1: 3 KPI UTAMA + 1 KPI PUNCAK ARUS */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* KPI 1: VOLUME PERGERAKAN PENUMPANG & SARANA */}
         <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -248,16 +270,17 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               KPI 1 • Volume Pergerakan
             </span>
-            <div className="p-2 rounded-lg bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400">
+            <div className="p-2 rounded-lg bg-[#EFF6FF] dark:bg-sky-950 text-[#003882] dark:text-sky-400">
               <Users className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 dark:text-white">
-            {fmt(kpi.total_penumpang_proyeksi_2026)} <span className="text-xs font-semibold text-slate-500">Orang</span>
+          <div className="text-2xl font-extrabold text-slate-900 dark:text-white num-tabular">
+            {fmt(kpi.total_penumpang_proyeksi_2026)}{" "}
+            <span className="text-xs font-semibold text-slate-500">Orang</span>
           </div>
-          <div className="mt-2 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+          <div className="mt-2 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 num-tabular">
             <span>Realisasi 2025: {fmt(kpi.total_penumpang_realisasi_2025)}</span>
-            <span className="font-semibold text-sky-600 dark:text-sky-400">
+            <span className="font-semibold text-[#0066CC] dark:text-sky-400">
               Sarana: {fmt(kpi.total_sarana_angkutan_umum_2026)} Unit
             </span>
           </div>
@@ -277,14 +300,14 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+            <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 num-tabular">
               +{kpi.pertumbuhan_penumpang_yoy_pct.toFixed(2).replace(".", ",")}%
             </span>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
               Moderasi Terkendali
             </span>
           </div>
-          <div className="mt-2 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+          <div className="mt-2 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 num-tabular">
             <span>Selisih: +{fmt(kpi.total_penumpang_proyeksi_2026 - kpi.total_penumpang_realisasi_2025)} orang</span>
             <span>Tol: +{kpi.pertumbuhan_tol_yoy_pct.toFixed(2).replace(".", ",")}%</span>
           </div>
@@ -303,7 +326,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
               <Gauge className="w-4 h-4" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 num-tabular">
             <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
               {kpi.rata_rata_load_factor_2026_pct.toFixed(2).replace(".", ",")}%
             </span>
@@ -313,12 +336,12 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
           </div>
           <div className="mt-2 w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
             <div
-              className="bg-gradient-to-r from-sky-500 via-amber-500 to-rose-500 h-full rounded-full"
+              className="bg-gradient-to-r from-[#0066CC] via-amber-500 to-rose-500 h-full rounded-full"
               style={{ width: `${kpi.rata_rata_load_factor_2026_pct}%` }}
             />
           </div>
           <div className="mt-2 pt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
-             Tertinggi: <b>Kereta Api (92,1%)</b> & <b>Udara (83,4%)</b>
+            Tertinggi: <b>Kereta Api (92,1%)</b> & <b>Udara (83,4%)</b>
           </div>
         </div>
 
@@ -332,14 +355,15 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg font-extrabold text-rose-600 dark:text-rose-400">
-            H-1: {fmt(kpi.puncak_mudik_volume)} <span className="text-xs font-medium text-slate-500">Orang</span>
+          <div className="text-lg font-extrabold text-rose-600 dark:text-rose-400 num-tabular">
+            H-1: {fmt(kpi.puncak_mudik_volume)}{" "}
+            <span className="text-xs font-medium text-slate-500">Orang</span>
           </div>
-          <div className="mt-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div className="mt-1 text-xs font-semibold text-slate-700 dark:text-slate-300 num-tabular">
             Arus Balik H+9: {fmt(kpi.puncak_balik_volume)} Orang
           </div>
           <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400">
-            Status Kesiagaan: <b>3 Hari Merah</b>, <b>9 Hari Kuning</b>, <b>6 Hari Hijau</b>
+            Status Kesiagaan: <b>{countMerah} Hari Merah</b>, <b>{countKuning} Hari Kuning</b>, <b>{countHijau} Hari Hijau</b>
           </div>
         </div>
       </div>
@@ -367,7 +391,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
                 }}
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition ${
                   metricType === "penumpang"
-                    ? "bg-gov-navy text-white shadow-sm dark:bg-sky-600"
+                    ? "bg-[#003882] text-white shadow-sm dark:bg-sky-600"
                     : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
                 }`}
               >
@@ -377,7 +401,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
                 onClick={() => setMetricType("sarana")}
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition ${
                   metricType === "sarana"
-                    ? "bg-gov-navy text-white shadow-sm dark:bg-sky-600"
+                    ? "bg-[#003882] text-white shadow-sm dark:bg-sky-600"
                     : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
                 }`}
               >
@@ -407,147 +431,171 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
         {/* KIRI (5 KOLOM): PANGSA MODA + TABEL RINCIAN + BARIS TOTAL KESELURUHAN */}
         <div className="xl:col-span-5 rounded-2xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Pangsa Moda Proyeksi Penumpang 2026
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Proporsi proyeksi 18,46 juta penumpang dari 5 moda angkutan umum
               </p>
             </div>
-            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300">
+            <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#EFF6FF] dark:bg-sky-950 text-[#003882] dark:text-sky-300 border border-blue-200/70 dark:border-sky-800 shrink-0">
               5 Moda Utama
             </span>
           </div>
 
           <EChartBox option={donutOption} height="285px" />
 
-          <div className="overflow-x-auto mt-2 flex-1">
+          <div className="overflow-x-auto mt-3 flex-1 flex flex-col justify-end">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase text-slate-500 dark:text-slate-400">
-                  <th className="py-2.5 px-2 font-bold">Moda Transportasi</th>
-                  <th className="py-2.5 px-2 text-right font-bold">Realisasi 2025</th>
-                  <th className="py-2.5 px-2 text-right font-bold">Proyeksi 2026</th>
-                  <th className="py-2.5 px-2 text-right font-bold">YoY</th>
-                  <th className="py-2.5 px-2 text-right font-bold">Porsi (%)</th>
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-[10px] uppercase text-slate-500 dark:text-slate-400">
+                  <th className="py-2.5 px-2.5 font-bold">Moda Transportasi</th>
+                  <th className="py-2.5 px-2.5 text-right font-bold">Realisasi 2025</th>
+                  <th className="py-2.5 px-2.5 text-right font-bold">Proyeksi 2026</th>
+                  <th className="py-2.5 px-2.5 text-right font-bold">YoY</th>
+                  <th className="py-2.5 px-2.5 text-right font-bold">Porsi (%)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
-                {data.moda_penumpang_summary.map((m) => (
-                  <tr key={m.moda} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-                    <td className="py-2.5 px-2 font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: m.warna }} />
-                      <span>{m.moda}</span>
-                    </td>
-                    <td className="py-2.5 px-2 text-right text-slate-600 dark:text-slate-300 font-medium">
-                      {fmt(m.realisasi_pnp_2025)}
-                    </td>
-                    <td className="py-2.5 px-2 text-right font-bold text-sky-700 dark:text-sky-400">
-                      {fmt(m.proyeksi_pnp_2026)}
-                    </td>
-                    <td className="py-2.5 px-2 text-right font-bold text-emerald-600 dark:text-emerald-400">
-                      +{m.pertumbuhan_pnp_yoy_pct.toFixed(2).replace(".", ",")}%
-                    </td>
-                    <td className="py-2.5 px-2 text-right font-bold text-slate-800 dark:text-slate-200">
-                      {m.pangsa_pasar_pct.toFixed(2).replace(".", ",")}%
-                    </td>
-                  </tr>
-                ))}
+                {data.moda_penumpang_summary.map((m) => {
+                  const colorDot = INA_MODA_COLORS[m.moda] || m.warna;
+                  return (
+                    <tr key={m.moda} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                      <td className="py-2.5 px-2.5 font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorDot }} />
+                        <span>{m.moda}</span>
+                      </td>
+                      <td className="py-2.5 px-2.5 text-right text-slate-600 dark:text-slate-300 font-medium num-tabular">
+                        {fmt(m.realisasi_pnp_2025)}
+                      </td>
+                      <td className="py-2.5 px-2.5 text-right font-bold text-[#003882] dark:text-sky-400 num-tabular">
+                        {fmt(m.proyeksi_pnp_2026)}
+                      </td>
+                      <td className="py-2.5 px-2.5 text-right font-bold text-emerald-600 dark:text-emerald-400 num-tabular">
+                        +{m.pertumbuhan_pnp_yoy_pct.toFixed(2).replace(".", ",")}%
+                      </td>
+                      <td className="py-2.5 px-2.5 text-right font-bold text-[#0066CC] dark:text-sky-300 num-tabular">
+                        {m.pangsa_pasar_pct.toFixed(2).replace(".", ",")}%
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
               <tfoot>
                 <tr className="bg-slate-100 dark:bg-slate-800/90 border-t-2 border-slate-300 dark:border-slate-700 font-extrabold text-slate-900 dark:text-white">
-                  <td className="py-3 px-2 rounded-bl-lg">TOTAL KESELURUHAN</td>
-                  <td className="py-3 px-2 text-right">{fmt(kpi.total_penumpang_realisasi_2025)}</td>
-                  <td className="py-3 px-2 text-right text-sky-700 dark:text-sky-300">
+                  <td className="py-3 px-2.5 rounded-bl-lg">TOTAL KESELURUHAN</td>
+                  <td className="py-3 px-2.5 text-right num-tabular">{fmt(kpi.total_penumpang_realisasi_2025)}</td>
+                  <td className="py-3 px-2.5 text-right text-[#003882] dark:text-sky-300 num-tabular">
                     {fmt(kpi.total_penumpang_proyeksi_2026)}
                   </td>
-                  <td className="py-3 px-2 text-right text-emerald-600 dark:text-emerald-400">
+                  <td className="py-3 px-2.5 text-right text-emerald-600 dark:text-emerald-400 num-tabular">
                     +{kpi.pertumbuhan_penumpang_yoy_pct.toFixed(2).replace(".", ",")}%
                   </td>
-                  <td className="py-3 px-2 text-right rounded-br-lg">100,00%</td>
+                  <td className="py-3 px-2.5 text-right text-[#0066CC] dark:text-sky-300 rounded-br-lg num-tabular">
+                    100,00%
+                  </td>
                 </tr>
               </tfoot>
             </table>
           </div>
         </div>
 
-        {/* KANAN (7 KOLOM): KALENDER PROYEKSI BEBAN POSKO 18 HARI */}
+        {/* KANAN (7 KOLOM): KALENDER PROYEKSI BEBAN POSKO 18 HARI (SEJAJAR PENUH DENGAN TOTAL KESELURUHAN) */}
         <div className="xl:col-span-7 rounded-2xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-            <div>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 mb-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="min-w-0">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-sky-500" />
-                Kalender Proyeksi Beban Posko (18 Hari Operasional)
+                <Calendar className="w-4 h-4 text-[#0066CC] dark:text-sky-400 shrink-0" />
+                <span className="truncate">Kalender Proyeksi Beban Posko (18 Hari)</span>
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Jadwal kronologis H-7 s.d H+10 estimasi volume proyeksi, status kesiagaan & rekomendasi aksi taktis
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                Jadwal kronologis H-7 s.d H+10 estimasi volume proyeksi & status kesiagaan
               </p>
             </div>
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1.5 shrink-0 flex-wrap sm:flex-nowrap">
               <button
                 onClick={() => setStatusFilter("ALL")}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${
+                title="Tampilkan seluruh 18 hari operasional posko"
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition whitespace-nowrap ${
                   statusFilter === "ALL"
-                    ? "bg-slate-800 text-white border-slate-800 dark:bg-white dark:text-slate-900"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-transparent"
+                    ? "bg-[#003882] text-white border-[#003882] dark:bg-sky-600 dark:border-sky-500"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200/70"
                 }`}
               >
                 Semua (18)
               </button>
               <button
-                onClick={() => setStatusFilter("HIJAU")}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${
+                onClick={() => setStatusFilter(statusFilter === "HIJAU" ? "ALL" : "HIJAU")}
+                title="Filter Status Lancar / Normal (< 980 Ribu penumpang/hari)"
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition whitespace-nowrap ${
                   statusFilter === "HIJAU"
                     ? "bg-emerald-600 text-white border-emerald-600"
-                    : "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300/50"
+                    : "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/70 hover:bg-emerald-100/80"
                 }`}
               >
-                ● {countHijau} Hari Normal (&lt;980 Rb)
+                <span className={`w-1.5 h-1.5 rounded-full ${statusFilter === "HIJAU" ? "bg-white" : "bg-emerald-500"}`} />
+                <span>{countHijau} Hari</span>
               </button>
               <button
-                onClick={() => setStatusFilter("KUNING")}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${
+                onClick={() => setStatusFilter(statusFilter === "KUNING" ? "ALL" : "KUNING")}
+                title="Filter Status Waspada Antrean (980 Ribu – 1,1 Juta penumpang/hari)"
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition whitespace-nowrap ${
                   statusFilter === "KUNING"
                     ? "bg-amber-500 text-white border-amber-500"
-                    : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300/50"
+                    : "bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/70 hover:bg-amber-100/80"
                 }`}
               >
-                ● {countKuning} Hari Waspada (980 Rb–1,1 Jt)
+                <span className={`w-1.5 h-1.5 rounded-full ${statusFilter === "KUNING" ? "bg-white" : "bg-amber-500"}`} />
+                <span>{countKuning} Hari</span>
               </button>
               <button
-                onClick={() => setStatusFilter("MERAH")}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${
+                onClick={() => setStatusFilter(statusFilter === "MERAH" ? "ALL" : "MERAH")}
+                title="Filter Status Siaga Puncak (≥ 1,1 Juta penumpang/hari)"
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition whitespace-nowrap ${
                   statusFilter === "MERAH"
                     ? "bg-rose-600 text-white border-rose-600"
-                    : "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-300/50"
+                    : "bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800/70 hover:bg-rose-100/80"
                 }`}
               >
-                ● {countMerah} Hari Puncak (&ge;1,1 Jt)
+                <span className="relative flex h-2 w-2">
+                  <span
+                    className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                      statusFilter === "MERAH" ? "bg-white" : "bg-rose-500"
+                    }`}
+                  />
+                  <span
+                    className={`relative inline-flex rounded-full h-2 w-2 ${
+                      statusFilter === "MERAH" ? "bg-white" : "bg-rose-600"
+                    }`}
+                  />
+                </span>
+                <span>{countMerah} Hari</span>
               </button>
             </div>
           </div>
 
-          <div className="overflow-y-auto max-h-[470px] rounded-xl border border-slate-200 dark:border-slate-800 flex-1">
+          <div className="overflow-y-auto flex-1 min-h-0 max-h-[550px] rounded-xl border border-slate-200 dark:border-slate-800">
             <table className="w-full text-left border-collapse text-xs">
-              <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 text-[11px] uppercase text-slate-600 dark:text-slate-300 z-10">
+              <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800 text-[10px] uppercase text-slate-500 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 z-10">
                 <tr>
-                  <th className="py-3 px-3 font-bold">Hari Posko</th>
-                  <th className="py-3 px-3 font-bold">Tanggal / Pekan</th>
-                  <th className="py-3 px-3 text-right font-bold">Volume Proyeksi (Orang)</th>
-                  <th className="py-3 px-3 text-center font-bold">Status Kesiagaan</th>
-                  <th className="py-3 px-3 font-bold">Rekomendasi Aksi Taktis Posko</th>
+                  <th className="py-2.5 px-3 font-bold">Hari Posko</th>
+                  <th className="py-2.5 px-3 font-bold">Tanggal / Pekan</th>
+                  <th className="py-2.5 px-3 text-right font-bold">Volume Proyeksi (Orang)</th>
+                  <th className="py-2.5 px-3 text-center font-bold">Status Kesiagaan</th>
+                  <th className="py-2.5 px-3 font-bold">Rekomendasi Aksi Taktis Posko</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredKalender.map((k) => {
-                  const badgeStyle =
-                    k.status_kode === "MERAH"
-                      ? "bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800"
-                      : k.status_kode === "KUNING"
-                      ? "bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800"
-                      : "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800";
+                  const isSiaga = k.status_kode === "MERAH";
+                  const isWaspada = k.status_kode === "KUNING";
+                  const badgeStyle = isSiaga
+                    ? "bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
+                    : isWaspada
+                    ? "bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                    : "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800";
 
                   return (
                     <tr
@@ -556,25 +604,38 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
                         k.is_puncak ? "bg-amber-50/50 dark:bg-amber-950/20" : ""
                       }`}
                     >
-                      <td className="py-2.5 px-3 font-extrabold text-slate-900 dark:text-white whitespace-nowrap">
+                      <td className="py-2.5 px-3 font-extrabold text-slate-900 dark:text-white whitespace-nowrap num-tabular">
                         <span>{k.hari_posko}</span>
                         {k.is_puncak && (
-                          <span className="ml-1.5 px-1.5 py-0.5 text-[9px] rounded bg-rose-600 text-white font-bold">
+                          <span className="ml-1.5 px-1.5 py-0.5 text-[9px] rounded bg-amber-200 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 font-bold">
                             PUNCAK
                           </span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         <div className="font-semibold">{k.hari_pekan}</div>
                         <div className="text-[10px] text-slate-400">{k.tanggal}</div>
                       </td>
-                      <td className="py-2.5 px-3 text-right font-extrabold text-sky-700 dark:text-sky-400 whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-right font-extrabold text-[#003882] dark:text-sky-400 whitespace-nowrap num-tabular">
                         {fmt(k.penumpang_proyeksi_2026)}
                       </td>
                       <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${badgeStyle}`}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                          {k.status_label}
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold border ${badgeStyle}`}
+                        >
+                          {isSiaga ? (
+                            <span className="relative flex h-2 w-2 shrink-0">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-85" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600" />
+                            </span>
+                          ) : (
+                            <span
+                              className={`w-2 h-2 rounded-full shrink-0 ${
+                                isWaspada ? "bg-amber-500" : "bg-emerald-500"
+                              }`}
+                            />
+                          )}
+                          <span>{k.status_label}</span>
                         </span>
                       </td>
                       <td className="py-2.5 px-3 text-[11px] text-slate-600 dark:text-slate-300 leading-snug">

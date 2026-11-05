@@ -23,13 +23,19 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
         <link
           rel="icon"
           type="image/svg+xml"
           href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23003882'/><path d='M16 4L5 9.5L16 15L27 9.5L16 4Z' fill='%2338BDF8'/><path d='M5 16L16 21.5L27 16' stroke='%23FBBF24' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/><path d='M5 21.5L16 27L27 21.5' stroke='%23FFFFFF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>"
         />
       </head>
-      <body className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans">
+      <body className="min-h-screen bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0B1120] dark:text-[#F8FAFC] font-sans">
         {children}
       </body>
     </html>

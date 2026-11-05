@@ -11,15 +11,21 @@ const config: Config = {
     extend: {
       colors: {
         gov: {
-          navy: "#0B2447",
-          blue: "#19376D",
-          azure: "#0284C7",
-          gold: "#D97706",
+          navy: "#003882",
+          navy_dark: "#002554",
+          blue: "#003882",
+          azure: "#0066CC",
+          azure_light: "#EFF6FF",
+          slate: "#F8FAFC",
           border: "#E2E8F0",
+          text: "#0F172A",
+          muted: "#475569",
+          gold: "#D97706",
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["'Plus Jakarta Sans'", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "Roboto", "sans-serif"],
+        mono: ["'Plus Jakarta Sans'", "system-ui", "-apple-system", "sans-serif"],
       },
     },
   },
