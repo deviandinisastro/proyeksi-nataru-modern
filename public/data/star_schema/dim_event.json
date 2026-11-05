@@ -1,0 +1,20 @@
+[
+  {
+    "event_id": "EV-NATARU-2026",
+    "nama_event": "Posko Terpadu Angkutan Natal 2026 & Tahun Baru 2027",
+    "jenis_event": "Nataru",
+    "durasi_hari": 18,
+    "rentang_operasional": "H-7 (18 Des 2026) s.d H+10 (4 Jan 2027)",
+    "total_penumpang_acuan": 18462913,
+    "karakteristik_mobilitas": "Kombinasi Mudik Natal & Wisata Akhir Tahun (Bimodal Peak H-1 & H+9)"
+  },
+  {
+    "event_id": "EV-LEBARAN-2026",
+    "nama_event": "Posko Terpadu Angkutan Lebaran / Idul Fitri 2026",
+    "jenis_event": "Lebaran",
+    "durasi_hari": 17,
+    "rentang_operasional": "H-7 (13 Mar 2026) s.d H+8 (29 Mar 2026)",
+    "total_penumpang_acuan": 0,
+    "karakteristik_mobilitas": "Dominasi Mudik Kampung Halaman Konsentrasi Tinggi Pulau Jawa & Sumatera"
+  }
+]
