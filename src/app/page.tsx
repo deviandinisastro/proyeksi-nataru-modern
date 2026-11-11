@@ -35,6 +35,51 @@ type WorkspaceTab =
   | "forecasting"
   | "architecture";
 
+// Logo Vektor Eksklusif Terinspirasi Portal STRATEGI Kemenhub
+// Menggabungkan 4 busur moda transportasi (Udara, Laut, Darat, KA) dan Bintang Kompas Navigasi
+function StrategiEmblem({ className = "w-10 h-10" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <defs>
+        <linearGradient id="stratBg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#001F3F" />
+          <stop offset="0.6" stopColor="#003882" />
+          <stop offset="1" stopColor="#0284C7" />
+        </linearGradient>
+        <linearGradient id="goldStar" x1="16" y1="16" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#FDE047" />
+          <stop offset="1" stopColor="#F59E0B" />
+        </linearGradient>
+      </defs>
+      {/* Dasar Emblem */}
+      <rect width="48" height="48" rx="12" fill="url(#stratBg)" />
+      <rect x="0.75" y="0.75" width="46.5" height="46.5" rx="11.25" stroke="rgba(255,255,255,0.22)" strokeWidth="1.5" />
+
+      {/* 4 Busur Sirkulasi Konvergensi Multimoda STRATEGI */}
+      {/* Udara (Sky Blue) */}
+      <path d="M12 18 C18 10, 30 10, 36 18" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Laut (Azure) */}
+      <path d="M12 30 C18 38, 30 38, 36 30" stroke="#60A5FA" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Kereta Api (Orange) */}
+      <path d="M18 12 C10 18, 10 30, 18 36" stroke="#FB923C" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Jalan / Darat (Emerald) */}
+      <path d="M30 12 C38 18, 38 30, 30 36" stroke="#34D399" strokeWidth="2.5" strokeLinecap="round" />
+
+      {/* Bintang Kompas Navigasi Pusat (Kemenhub Gold) */}
+      <polygon
+        points="24,14 26.8,21.2 34,24 26.8,26.8 24,34 21.2,26.8 14,24 21.2,21.2"
+        fill="url(#goldStar)"
+      />
+      <circle cx="24" cy="24" r="2.8" fill="#FFFFFF" />
+    </svg>
+  );
+}
+
 export default function MudikHubPage() {
   const [bundle, setBundle] = useState<MudikHubBundle | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("overview");
@@ -97,7 +142,6 @@ export default function MudikHubPage() {
     items: {
       id: WorkspaceTab;
       label: string;
-      sub: string;
       badge?: string;
       icon: any;
     }[];
@@ -107,23 +151,18 @@ export default function MudikHubPage() {
       items: [
         {
           id: "overview",
-          label: "Ikhtisar Eksekutif Posko",
-          sub: "KPI Utama & Kalender 18 Hari",
-          badge: "3 KPI",
+          label: "Ikhtisar Eksekutif",
           icon: LayoutDashboard,
         },
         {
           id: "spatial",
-          label: "Peta Web GIS 1.212 Simpul",
-          sub: "Sebaran Titik Pantau Nasional",
+          label: "Peta Web GIS",
           badge: "1.212",
           icon: MapPin,
         },
         {
           id: "corridor",
-          label: "Koridor Tol, Arteri & ASDP",
-          sub: "4 Gerbang Tol & Lintas Utama",
-          badge: "4 GT",
+          label: "Koridor Tol & ASDP",
           icon: Car,
         },
       ],
@@ -133,23 +172,18 @@ export default function MudikHubPage() {
       items: [
         {
           id: "saw",
-          label: "SPK Metode SAW & Armada",
-          sub: "Prioritas Moda & Alokasi Sarana",
+          label: "SPK Prioritas Simpul",
           badge: "SAW",
           icon: Award,
         },
         {
           id: "forecasting",
-          label: "Turnamen 7 Model & Rumus",
-          sub: "Evaluasi Damped Holt-Winters",
-          badge: "6,93%",
+          label: "Turnamen 7 Model",
           icon: Trophy,
         },
         {
           id: "architecture",
-          label: "Star Schema & ETL Strategi",
-          sub: "Basis Data & Kamus Data",
-          badge: "DB",
+          label: "Arsitektur Data",
           icon: Database,
         },
       ],
@@ -224,14 +258,12 @@ export default function MudikHubPage() {
                 setActiveTab("overview");
                 setMobileMenuOpen(false);
               }}
-              title="Kembali ke Menu Utama (Ikhtisar Eksekutif Posko)"
+              title="Kembali ke Menu Utama (Ikhtisar Eksekutif)"
               className={`flex items-center gap-3 overflow-hidden text-left group hover:opacity-95 transition ${
                 sidebarCollapsed ? "justify-center" : "min-w-0 flex-1"
               }`}
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gov-navy via-sky-700 to-amber-500 flex items-center justify-center text-white shadow-md shrink-0 group-hover:scale-105 transition-transform">
-                <ShieldCheck className="w-5 h-5 text-white" />
-              </div>
+              <StrategiEmblem className="w-10 h-10 shrink-0 group-hover:scale-105 transition-transform" />
               {!sidebarCollapsed && (
                 <div className="truncate">
                   <div className="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider truncate">
@@ -256,16 +288,16 @@ export default function MudikHubPage() {
             </button>
           </div>
 
-          {/* DAFTAR MENU WORKSPACE */}
-          <div className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
+          {/* DAFTAR MENU WORKSPACE (CLEAN 1-LINE DENGAN SPACING LEGA) */}
+          <div className="flex-1 overflow-y-auto py-4 px-3 space-y-4">
             {navGroups.map((group) => (
               <div key={group.groupTitle}>
                 {!sidebarCollapsed && (
-                  <div className="px-2.5 mb-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate">
+                  <div className="px-2.5 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate">
                     {group.groupTitle}
                   </div>
                 )}
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   {group.items.map((item) => {
                     const Icon = item.icon;
                     const active = activeTab === item.id;
@@ -277,18 +309,14 @@ export default function MudikHubPage() {
                           setActiveTab(item.id);
                           setMobileMenuOpen(false);
                         }}
-                        title={
-                          sidebarCollapsed
-                            ? `${item.label} — ${item.sub}`
-                            : undefined
-                        }
+                        title={item.label}
                         className={`flex items-center rounded-xl text-left transition-all ${
                           sidebarCollapsed
                             ? "w-11 h-11 mx-auto justify-center px-0"
                             : "w-full gap-3 px-3 py-2.5"
                         } ${
                           active
-                            ? "bg-gov-navy text-white shadow-sm dark:bg-sky-600"
+                            ? "bg-gov-navy text-white shadow-xs dark:bg-sky-600"
                             : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
@@ -300,27 +328,16 @@ export default function MudikHubPage() {
                           }`}
                         />
                         {!sidebarCollapsed && (
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-bold truncate">
-                              {item.label}
-                            </div>
-                            <div
-                              className={`text-[10px] truncate ${
-                                active
-                                  ? "text-sky-100"
-                                  : "text-slate-400 dark:text-slate-500"
-                              }`}
-                            >
-                              {item.sub}
-                            </div>
-                          </div>
+                          <span className="flex-1 text-xs font-bold truncate">
+                            {item.label}
+                          </span>
                         )}
                         {!sidebarCollapsed && item.badge && (
                           <span
                             className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold shrink-0 ${
                               active
                                 ? "bg-white/20 text-white"
-                                : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700"
                             }`}
                           >
                             {item.badge}
@@ -336,19 +353,15 @@ export default function MudikHubPage() {
         </div>
 
         {/* BAGIAN BAWAH SIDEBAR: TOMBOL CIUTKAN / BUKA MENU & KARTU STRATEGI KEMENHUB */}
-        <div className="p-3 border-t border-slate-200 dark:border-slate-800 shrink-0 space-y-2.5">
-          {/* Tombol Ciutkan / Buka Sidebar (Selalu di Bawah) */}
+        <div className="p-3 border-t border-slate-200 dark:border-slate-800 shrink-0 space-y-2">
+          {/* Tombol Ciutkan / Buka Sidebar */}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               setSidebarCollapsed(!sidebarCollapsed);
             }}
-            title={
-              sidebarCollapsed
-                ? "Buka Sidebar"
-                : "Ciutkan Menu Sidebar"
-            }
+            title={sidebarCollapsed ? "Buka Sidebar" : "Ciutkan Menu Sidebar"}
             className={`hidden lg:flex items-center rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-800/90 hover:bg-sky-600 hover:text-white hover:border-sky-500 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all ${
               sidebarCollapsed
                 ? "w-11 h-11 mx-auto justify-center"
@@ -365,26 +378,30 @@ export default function MudikHubPage() {
             )}
           </button>
 
-          {/* Kartu Sumber Data Resmi (Hanya Tampil Saat Sidebar Terbuka) */}
+          {/* Kartu Sumber Data Resmi (Ringkas & Elegan) */}
           {!sidebarCollapsed && (
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-800 dark:text-slate-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Portal STRATEGI Kemenhub</span>
+            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <div className="truncate">
+                  <div className="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate">
+                    Portal STRATEGI
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Pusdatin Kemenhub RI
+                  </div>
+                </div>
               </div>
               <a
                 href="https://strategi.kemenhub.go.id/"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline break-all"
+                className="p-1 rounded-md text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-700 shrink-0"
+                title="Buka Portal STRATEGI Kemenhub"
               >
-                <span>https://strategi.kemenhub.go.id/</span>
-                <ExternalLink className="w-3 h-3 shrink-0" />
+                <ExternalLink className="w-3.5 h-3.5" />
               </a>
-              <div className="mt-1.5 text-[10px] text-slate-500 dark:text-slate-400">
-                1.212 Simpul Nasional • MAPE 6,93%
-              </div>
             </div>
           )}
         </div>
@@ -405,8 +422,8 @@ export default function MudikHubPage() {
               <h1 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
                 {currentNav.label}
               </h1>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                {currentNav.sub}
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                Posko Terpadu Angkutan Nataru 2026/2027 • Pusdatin Kemenhub RI
               </p>
             </div>
           </div>

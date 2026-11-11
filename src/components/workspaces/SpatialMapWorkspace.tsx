@@ -4,13 +4,13 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { MudikHubBundle, SimpulNode } from "@/types/mudikhub";
 import EChartBox from "@/components/charts/EChartBox";
 import {
-  MapPin,
   Search,
-  Filter,
   CheckCircle2,
   Layers,
   Navigation,
   BarChart3,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 interface SpatialMapWorkspaceProps {
@@ -28,16 +28,26 @@ const MODA_COLORS: Record<string, string> = {
   "Angkutan Laut": "#0284c7",
 };
 
+const UNIFORM_RADIUS = 4.2;
+const INDONESIA_BOUNDS: [[number, number], [number, number]] = [
+  [-10.8, 95.0],
+  [5.8, 141.0],
+];
+
 export default function SpatialMapWorkspace({ data, darkMode }: SpatialMapWorkspaceProps) {
   const [selectedModa, setSelectedModa] = useState<string>("ALL");
   const [selectedProvinsi, setSelectedProvinsi] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedNode, setSelectedNode] = useState<SimpulNode | null>(null);
+  const [legendOpen, setLegendOpen] = useState<boolean>(true);
+  const [showHeatmap, setShowHeatmap] = useState<boolean>(true);
+  const [mapReady, setMapReady] = useState<boolean>(false);
   const [tablePage, setTablePage] = useState<number>(1);
   const rowsPerPage = 15;
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const heatmapLayerRef = useRef<any>(null);
   const markersLayerRef = useRef<any>(null);
 
   const provinces = useMemo(() => {
@@ -46,6 +56,13 @@ export default function SpatialMapWorkspace({ data, darkMode }: SpatialMapWorksp
       if (n.provinsi && n.provinsi !== "-") s.add(n.provinsi);
     });
     return Array.from(s).sort();
+  }, [data.simpul_1212]);
+
+  const top10Ids = useMemo(() => {
+    const sorted = [...data.simpul_1212].sort(
+      (a, b) => (b.proyeksi_pnp_2026 || 0) - (a.proyeksi_pnp_2026 || 0)
+    );
+    return new Set(sorted.slice(0, 10).map((n) => n.simpul_id));
   }, [data.simpul_1212]);
 
   const filteredNodes = useMemo(() => {
@@ -63,41 +80,80 @@ export default function SpatialMapWorkspace({ data, darkMode }: SpatialMapWorksp
     });
   }, [data.simpul_1212, selectedModa, selectedProvinsi, searchQuery]);
 
+  // Reset Peta ke Wilayah Kepulauan Indonesia (Sabang s.d Merauke)
+  const handleResetIndonesia = () => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.fitBounds(INDONESIA_BOUNDS, {
+        padding: [20, 20],
+        animate: true,
+      });
+    }
+  };
+
   // Initialize Leaflet Map on Client
   useEffect(() => {
-    let isMounted = true;
+    let isCancelled = false;
     if (!mapContainerRef.current) return;
 
     import("leaflet").then((L) => {
-      if (!isMounted || !mapContainerRef.current) return;
+      if (isCancelled || !mapContainerRef.current) return;
 
-      if (!mapInstanceRef.current) {
-        const map = L.map(mapContainerRef.current, {
-          center: [-2.5, 118.0],
-          zoom: 5,
-          zoomControl: true,
-        });
-
-        const tileUrl = darkMode
-          ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
-
-        L.tileLayer(tileUrl, {
-          attribution: '&copy; OpenStreetMap &copy; CARTO | Pusdatin Kemenhub RI',
-          maxZoom: 18,
-        }).addTo(map);
-
-        markersLayerRef.current = L.layerGroup().addTo(map);
-        mapInstanceRef.current = map;
+      // Hapus instance leaflet sebelumnya jika container sudah pernah diinisialisasi
+      if ((mapContainerRef.current as any)._leaflet_id) {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
+        } else {
+          delete (mapContainerRef.current as any)._leaflet_id;
+        }
       }
+
+      const map = L.map(mapContainerRef.current, {
+        center: [-2.5, 118.0],
+        zoom: 5,
+        zoomControl: true,
+      });
+
+      const tileUrl = darkMode
+        ? "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+        : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+      L.tileLayer(tileUrl, {
+        attribution: "&copy; OpenStreetMap contributors | Pusdatin Kemenhub RI",
+        maxZoom: 18,
+      }).addTo(map);
+
+      // Layer 1: Heatmap (di bawah)
+      const heatmapGroup = L.layerGroup().addTo(map);
+      heatmapLayerRef.current = heatmapGroup;
+
+      // Layer 2: Markers (di atas)
+      const markersGroup = L.layerGroup().addTo(map);
+      markersLayerRef.current = markersGroup;
+
+      mapInstanceRef.current = map;
+      setMapReady(true);
+
+      setTimeout(() => {
+        if (!isCancelled && map) {
+          map.invalidateSize();
+          map.fitBounds(INDONESIA_BOUNDS, { padding: [15, 15] });
+        }
+      }, 250);
     });
 
     return () => {
-      isMounted = false;
+      isCancelled = true;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        heatmapLayerRef.current = null;
+        markersLayerRef.current = null;
+      }
     };
   }, []);
 
-  // Update Tile Layer when darkMode changes
+  // Update Tile Layer saat darkMode berubah
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     import("leaflet").then((L) => {
@@ -108,61 +164,146 @@ export default function SpatialMapWorkspace({ data, darkMode }: SpatialMapWorksp
         }
       });
       const tileUrl = darkMode
-        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+        ? "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+        : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
       L.tileLayer(tileUrl, {
-        attribution: '&copy; OpenStreetMap &copy; CARTO | Pusdatin Kemenhub RI',
+        attribution: "&copy; OpenStreetMap contributors | Pusdatin Kemenhub RI",
         maxZoom: 18,
       }).addTo(map);
     });
   }, [darkMode]);
 
-  // Render 1.212 Markers on Map
+  // Render Lapisan Heatmap Kepadatan Arus Spasial
   useEffect(() => {
-    if (!mapInstanceRef.current || !markersLayerRef.current) return;
+    if (!mapReady || !mapInstanceRef.current || !heatmapLayerRef.current) return;
+
+    const heatGroup = heatmapLayerRef.current;
+    heatGroup.clearLayers();
+
+    if (!showHeatmap || filteredNodes.length === 0) return;
+
+    import("leaflet.heat")
+      .then(({ HeatLayer }) => {
+        if (!heatmapLayerRef.current) return;
+        const validNodes = filteredNodes.filter(
+          (n) => typeof n.lat === "number" && typeof n.lon === "number"
+        );
+        if (validNodes.length === 0) return;
+
+        const maxVol = Math.max(
+          ...validNodes.map((n) => n.proyeksi_pnp_2026 || 0),
+          100000
+        );
+
+        const heatPoints = validNodes.map((n) => {
+          const vol = n.proyeksi_pnp_2026 || 0;
+          // Normalisasi skala logaritmik agar wilayah luar Jawa tetap terpancar seimbang
+          const intensity = Math.min(1.0, Math.max(0.18, Math.pow(vol / maxVol, 0.4)));
+          return [n.lat, n.lon, intensity] as [number, number, number];
+        });
+
+        const heatLayer = new HeatLayer(heatPoints, {
+          radius: 30,
+          blur: 20,
+          maxZoom: 11,
+          minOpacity: 0.38,
+          gradient: {
+            0.15: "#38bdf8",
+            0.35: "#10b981",
+            0.60: "#fbbf24",
+            0.82: "#f97316",
+            1.00: "#ef4444",
+          },
+        });
+
+        heatGroup.addLayer(heatLayer);
+      })
+      .catch((err) => {
+        console.warn("HeatLayer gagal dimuat:", err);
+      });
+  }, [filteredNodes, mapReady, showHeatmap]);
+
+  // Render 1.212 Markers SAMA RATA (UNIFORM RADIUS: 4.2px)
+  useEffect(() => {
+    if (!mapReady || !mapInstanceRef.current || !markersLayerRef.current) return;
 
     import("leaflet").then((L) => {
       const layerGroup = markersLayerRef.current;
+      if (!layerGroup) return;
       layerGroup.clearLayers();
 
       filteredNodes.forEach((node) => {
-        const color = MODA_COLORS[node.nama_moda] || "#0284c7";
-        const radius = Math.max(4.5, Math.min(13, Math.log10(Math.max(10, node.proyeksi_pnp_2026)) * 1.9));
+        if (typeof node.lat !== "number" || typeof node.lon !== "number") return;
 
+        const color = MODA_COLORS[node.nama_moda] || "#0284c7";
+        const isTop10 = top10Ids.has(node.simpul_id);
+
+        // Ukuran titik seragam sama rata sesuai arahan statistisi Kemenhub (4.2px)
         const circle = L.circleMarker([node.lat, node.lon], {
-          radius,
+          radius: UNIFORM_RADIUS,
           fillColor: color,
-          color: "#ffffff",
-          weight: 1.2,
-          opacity: 0.95,
-          fillOpacity: 0.82,
+          color: isTop10 ? "#f59e0b" : "#ffffff",
+          weight: isTop10 ? 1.8 : 1.1,
+          opacity: 1.0,
+          fillOpacity: 0.9,
         });
 
+        // Hover Effect Halus
+        circle.on("mouseover", () => {
+          circle.setStyle({ radius: 6.5, weight: 2.2, fillOpacity: 1.0 });
+        });
+        circle.on("mouseout", () => {
+          circle.setStyle({
+            radius: UNIFORM_RADIUS,
+            weight: isTop10 ? 1.8 : 1.1,
+            fillOpacity: 0.9,
+          });
+        });
+
+        // Tooltip Cepat
+        circle.bindTooltip(
+          `<b>${node.nama_simpul}</b><br/><span style="color:#38bdf8;">${fmt(
+            node.proyeksi_pnp_2026
+          )} org</span>`,
+          {
+            direction: "top",
+            offset: [0, -4],
+            className:
+              "bg-slate-900 text-white text-[11px] px-2 py-1 rounded-lg shadow-lg border border-slate-700",
+          }
+        );
+
+        // Popup Rinci saat Diklik
         const popupHtml = `
-          <div style="font-family:Inter,sans-serif;min-width:210px;padding:2px;">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:${color};margin-bottom:2px;">
-              ${node.nama_moda} • ${node.kode_simpul}
+          <div style="font-family:Inter,sans-serif;min-width:220px;padding:2px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+              <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:${color};">
+                ${node.nama_moda}
+              </span>
+              <span style="font-size:10px;font-weight:700;background:#f1f5f9;color:#475569;padding:1px 6px;border-radius:4px;">
+                ${node.kode_simpul}
+              </span>
             </div>
-            <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:4px;">
+            <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:4px;line-height:1.3;">
               ${node.nama_simpul}
             </div>
             <div style="font-size:11px;color:#475569;margin-bottom:6px;">
               Provinsi: <b>${node.provinsi}</b>
             </div>
             <div style="border-top:1px solid #e2e8f0;padding-top:6px;font-size:11px;color:#1e293b;">
-              <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
                 <span>Realisasi 2025:</span>
                 <b>${fmt(node.realisasi_pnp_2025)} org</b>
               </div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
                 <span>Proyeksi 2026:</span>
                 <b style="color:#0284c7;">${fmt(node.proyeksi_pnp_2026)} org</b>
               </div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
                 <span>Proyeksi Sarana:</span>
                 <b>${fmt(node.proyeksi_sarana_2026)} unit</b>
               </div>
-              <div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b;margin-top:4px;">
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b;margin-top:5px;border-top:1px dashed #cbd5e1;padding-top:4px;">
                 <span>Koordinat GPS:</span>
                 <span>${node.lat.toFixed(4)}, ${node.lon.toFixed(4)}</span>
               </div>
@@ -177,9 +318,9 @@ export default function SpatialMapWorkspace({ data, darkMode }: SpatialMapWorksp
         circle.addTo(layerGroup);
       });
     });
-  }, [filteredNodes]);
+  }, [filteredNodes, mapReady, top10Ids]);
 
-  // Top 12 Simpul Chart based on current filter
+  // Top 12 Simpul Chart
   const top12Nodes = useMemo(() => {
     return [...filteredNodes]
       .sort((a, b) => b.proyeksi_pnp_2026 - a.proyeksi_pnp_2026)
@@ -210,7 +351,8 @@ export default function SpatialMapWorkspace({ data, darkMode }: SpatialMapWorksp
         axisLabel: {
           color: textColor,
           fontSize: 10,
-          formatter: (v: number) => (v >= 1000000 ? `${(v / 1000000).toFixed(1)}Jt` : `${(v / 1000).toFixed(0)}Rb`),
+          formatter: (v: number) =>
+            v >= 1000000 ? `${(v / 1000000).toFixed(1)}Jt` : `${(v / 1000).toFixed(0)}Rb`,
         },
         splitLine: { lineStyle: { color: gridColor, type: "dashed" } },
       },
@@ -241,7 +383,10 @@ export default function SpatialMapWorkspace({ data, darkMode }: SpatialMapWorksp
   }, [filteredNodes]);
 
   const totalPages = Math.max(1, Math.ceil(sortedForTable.length / rowsPerPage));
-  const paginatedNodes = sortedForTable.slice((tablePage - 1) * rowsPerPage, tablePage * rowsPerPage);
+  const paginatedNodes = sortedForTable.slice(
+    (tablePage - 1) * rowsPerPage,
+    tablePage * rowsPerPage
+  );
 
   const focusNodeOnMap = (node: SimpulNode) => {
     setSelectedNode(node);
@@ -252,59 +397,66 @@ export default function SpatialMapWorkspace({ data, darkMode }: SpatialMapWorksp
 
   return (
     <div className="space-y-6">
-      {/* HEADER SPASIAL 1.212 SIMPUL TERVALIDASI */}
-      <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold mb-2">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              Tervalidasi Tim Statistisi & Tim Spasial Pusdatin (1.212 Simpul Resmi Strategi Kemenhub)
-            </div>
-            <h2 className="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white">
-              Pemetaan Geospasial Web GIS 1.212 Titik Simpul Transportasi Nasional
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Seluruh 1.212 titik simpul pantauan nasional telah melalui pembersihan ETL (257 Bandara, 197 Stasiun KA, 215 Terminal Jalan, 276 Pelabuhan Penyeberangan, dan 267 Pelabuhan Laut).
-            </p>
+      {/* HEADER SPASIAL 1.212 SIMPUL TERVALIDASI - STACKED LEGA (TANPA KIRI-KANAN SQUEEZED) */}
+      <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+        {/* BARIS 1: JUDUL & DESKRIPSI LEBAR PENUH (TIDAK TERPOTONG) */}
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-xs font-bold mb-2">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            Tervalidasi Tim Statistisi & Tim Spasial Pusdatin (1.212 Simpul Resmi STRATEGI Kemenhub)
           </div>
-
-          {/* KARTU RINGKASAN JUMLAH SIMPUL PER MODA */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 shrink-0">
-            {[
-              { label: "Udara", count: 257, moda: "Angkutan Udara", dot: "#1d4ed8" },
-              { label: "Perkeretaapian", count: 197, moda: "Kereta Api", dot: "#ea580c" },
-              { label: "Jalan (Bus)", count: 215, moda: "Angkutan Jalan", dot: "#16a34a" },
-              { label: "Penyeberangan", count: 276, moda: "Angkutan SDP", dot: "#9333ea" },
-              { label: "Laut (Pelni)", count: 267, moda: "Angkutan Laut", dot: "#0284c7" },
-            ].map((item) => {
-              const active = selectedModa === item.moda;
-              return (
-                <button
-                  key={item.label}
-                  onClick={() => {
-                    setSelectedModa(active ? "ALL" : item.moda);
-                    setTablePage(1);
-                  }}
-                  className={`px-3 py-2 rounded-xl border text-left transition ${
-                    active
-                      ? "bg-slate-900 text-white border-slate-900 dark:bg-sky-600 dark:border-sky-500"
-                      : "bg-slate-50 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 hover:border-sky-400"
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold opacity-90">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.dot }} />
-                    <span className="truncate">{item.label}</span>
-                  </div>
-                  <div className="text-base font-extrabold mt-0.5">{item.count}</div>
-                </button>
-              );
-            })}
-          </div>
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Pemetaan Geospasial Web GIS 1.212 Titik Simpul Transportasi Nasional
+          </h2>
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-5xl leading-relaxed">
+            Seluruh 1.212 titik simpul pantauan nasional telah melalui pembersihan ETL (257 Bandara, 197 Stasiun KA, 215 Terminal Jalan, 276 Pelabuhan Penyeberangan, dan 267 Pelabuhan Laut).
+          </p>
         </div>
 
-        {/* BAR FILTER & PENCARIAN SIMPUL */}
+        {/* BARIS 2: 5 KARTU FILTER MODA MEMBENTANG HORIZONTAL PENUH */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-5 pt-5 border-t border-slate-100 dark:border-slate-800">
+          {[
+            { label: "Udara", sub: "Bandara", count: 257, moda: "Angkutan Udara", dot: "#1d4ed8" },
+            { label: "Perkeretaapian", sub: "Stasiun KA", count: 197, moda: "Kereta Api", dot: "#ea580c" },
+            { label: "Jalan (Bus)", sub: "Terminal Bus", count: 215, moda: "Angkutan Jalan", dot: "#16a34a" },
+            { label: "Penyeberangan", sub: "Pelabuhan SDP", count: 276, moda: "Angkutan SDP", dot: "#9333ea" },
+            { label: "Laut (Pelni)", sub: "Pelabuhan Laut", count: 267, moda: "Angkutan Laut", dot: "#0284c7" },
+          ].map((item) => {
+            const active = selectedModa === item.moda;
+            return (
+              <button
+                key={item.label}
+                onClick={() => {
+                  setSelectedModa(active ? "ALL" : item.moda);
+                  setTablePage(1);
+                }}
+                className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                  active
+                    ? "bg-slate-900 text-white border-slate-900 dark:bg-sky-600 dark:border-sky-500 shadow-md ring-2 ring-sky-400/30"
+                    : "bg-slate-50 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 hover:border-sky-400 hover:bg-slate-100/80 dark:hover:bg-slate-800"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold opacity-90">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: item.dot }}
+                    />
+                    <span>{item.label}</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    {item.sub}
+                  </div>
+                </div>
+                <div className="text-xl font-black num-tabular">{item.count}</div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* BARIS 3: BAR FILTER & PENCARIAN SIMPUL */}
         <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-3">
-          <div className="relative flex-1 min-w-[220px]">
+          <div className="relative flex-1 min-w-[240px]">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -357,9 +509,7 @@ export default function SpatialMapWorkspace({ data, darkMode }: SpatialMapWorksp
                 setSelectedProvinsi("ALL");
                 setSearchQuery("");
                 setTablePage(1);
-                if (mapInstanceRef.current) {
-                  mapInstanceRef.current.setView([-2.5, 118.0], 5, { animate: true });
-                }
+                handleResetIndonesia();
               }}
               className="px-3 py-2 rounded-xl bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-xs font-bold hover:bg-rose-200 transition"
             >
@@ -372,65 +522,145 @@ export default function SpatialMapWorkspace({ data, darkMode }: SpatialMapWorksp
       {/* PETA WEB GIS LEAFLET + PANEL LEGENDA & RANKING TOP 12 */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         {/* PETA UTAMA (8 KOLOM) */}
-        <div className="xl:col-span-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden relative min-h-[480px]">
-          <div ref={mapContainerRef} className="w-full h-[500px] z-0" />
-
-          {/* FLOATING LEGEND MIRIP STANDAR SPASIAL PUSDATIN */}
-          <div className="absolute bottom-4 left-4 z-[400] bg-slate-900/95 text-white p-4 rounded-2xl shadow-xl border border-slate-700/80 backdrop-blur max-w-[230px]">
-            <div className="text-xs font-extrabold tracking-wide mb-1.5 flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-sky-400" />
-              <span>Intensitas Beban Wilayah:</span>
-            </div>
-            <div className="text-[10px] text-slate-300 mb-1">
-              Intensitas: <b>Rendah &rarr; Puncak</b>
-            </div>
-            <div className="h-2.5 w-full rounded-full bg-gradient-to-r from-sky-400 via-emerald-400 via-amber-400 to-rose-500 mb-1" />
-            <div className="flex justify-between text-[10px] text-slate-400 mb-3">
-              <span>&lt;5%</span>
-              <span>15%</span>
-              <span>35%</span>
-              <span>65%+</span>
+        <div className="xl:col-span-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+          {/* BAR KONTROL DI ATAS PETA (SEPERTI DI WEB LAMA) */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-xs">
+            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-semibold">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span>{filteredNodes.length} Simpul Multimoda Terpetakan</span>
+              <span className="text-slate-400 dark:text-slate-500">•</span>
+              <span className="text-slate-500 dark:text-slate-400 font-normal">
+                Skala Koordinat Resmi Pusdatin
+              </span>
             </div>
 
-            <div className="border-t border-slate-700/80 pt-2.5">
-              <div className="text-xs font-extrabold mb-2">Titik Simpul per Moda:</div>
-              <div className="space-y-1.5 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#1d4ed8]" />
-                    Udara
-                  </span>
-                  <span className="font-bold text-sky-300">(257)</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mr-1">
+                Kontrol Peta:
+              </span>
+
+              {/* TOGGLE HEATMAP */}
+              <button
+                onClick={() => setShowHeatmap((prev) => !prev)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition flex items-center gap-1.5 ${
+                  showHeatmap
+                    ? "bg-slate-900 text-white border-slate-900 dark:bg-sky-600 dark:border-sky-500 shadow-sm"
+                    : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 opacity-70"
+                }`}
+                title="Nyalakan / Matikan Lapisan Heatmap Kepadatan Spasial"
+              >
+                <span>🔥</span>
+                <span>Heatmap Kepadatan</span>
+              </button>
+
+              {/* PUSATKAN INDONESIA */}
+              <button
+                onClick={handleResetIndonesia}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-sky-600 transition flex items-center gap-1.5 shadow-sm"
+                title="Pusatkan Peta ke Seluruh Kepulauan Indonesia (Sabang s.d Merauke)"
+              >
+                <Navigation className="w-3.5 h-3.5 text-sky-500" />
+                <span>Pusatkan Indonesia</span>
+              </button>
+            </div>
+          </div>
+
+          {/* CANVAS PETA LEAFLET & LEGENDA FLOATING */}
+          <div className="relative w-full h-[520px]">
+            <div ref={mapContainerRef} className="w-full h-full z-0" />
+
+            {/* FLOATING COLLAPSIBLE LEGEND (POJOK KIRI BAWAH) */}
+            <div className="absolute bottom-4 left-4 z-[400] bg-slate-900/95 text-white rounded-2xl shadow-xl border border-slate-700/80 backdrop-blur transition-all duration-200">
+              {legendOpen ? (
+                <div className="p-3.5 max-w-[250px]">
+                  <div className="flex items-center justify-between gap-3 mb-2 pb-1.5 border-b border-slate-700/60">
+                    <div className="text-xs font-extrabold tracking-wide flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-sky-400" />
+                      <span>Keterangan Peta Spasial</span>
+                    </div>
+                    <button
+                      onClick={() => setLegendOpen(false)}
+                      className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                      title="Ciutkan Keterangan Peta"
+                    >
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* GRADIENT HEATMAP */}
+                  <div className="text-[10px] text-slate-300 mb-1 flex items-center justify-between">
+                    <span>Intensitas Kepadatan:</span>
+                    <span className="text-[9px] font-bold text-sky-300 bg-sky-950 px-1.5 py-0.5 rounded">
+                      Posko Nataru
+                    </span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-gradient-to-r from-sky-400 via-emerald-400 via-amber-400 to-rose-600 mb-1" />
+                  <div className="flex justify-between text-[9px] text-slate-400 mb-1 font-semibold">
+                    <span>Rendah</span>
+                    <span>Sedang</span>
+                    <span>Padat</span>
+                    <span>Puncak</span>
+                  </div>
+                  <div className="text-[8.5px] text-slate-400 italic mb-2.5 leading-tight">
+                    *Normalisasi Kernel Density thd. Soetta (Simpul Terpadat)
+                  </div>
+
+                  {/* SEBARAN TITIK MODA (UKURAN SAMA RATA) */}
+                  <div className="border-t border-slate-700/70 pt-2">
+                    <div className="text-[10px] font-bold text-slate-200 mb-1.5 uppercase tracking-wider flex items-center justify-between">
+                      <span>Simpul (Ukuran Seragam)</span>
+                      <span className="text-slate-400 font-normal">1.212 Titik</span>
+                    </div>
+                    <div className="space-y-1 text-[11px]">
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#1d4ed8] border border-white/60" />
+                          Udara
+                        </span>
+                        <span className="font-bold text-sky-300 num-tabular">257 Bandara</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#ea580c] border border-white/60" />
+                          Perkeretaapian
+                        </span>
+                        <span className="font-bold text-amber-300 num-tabular">197 Stasiun</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#16a34a] border border-white/60" />
+                          Jalan (Bus)
+                        </span>
+                        <span className="font-bold text-emerald-300 num-tabular">215 Terminal</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#9333ea] border border-white/60" />
+                          Penyeberangan
+                        </span>
+                        <span className="font-bold text-purple-300 num-tabular">276 Pelabuhan</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#0284c7] border border-white/60" />
+                          Laut (Pelni)
+                        </span>
+                        <span className="font-bold text-cyan-300 num-tabular">267 Pelabuhan</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#ea580c]" />
-                    Perkeretaapian
-                  </span>
-                  <span className="font-bold text-amber-300">(197)</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#16a34a]" />
-                    Jalan
-                  </span>
-                  <span className="font-bold text-emerald-300">(215)</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#9333ea]" />
-                    Penyeberangan
-                  </span>
-                  <span className="font-bold text-purple-300">(276)</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#0284c7]" />
-                    Laut
-                  </span>
-                  <span className="font-bold text-cyan-300">(267)</span>
-                </div>
-              </div>
+              ) : (
+                <button
+                  onClick={() => setLegendOpen(true)}
+                  className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-white hover:text-sky-300 transition"
+                  title="Buka Keterangan Peta Spasial"
+                >
+                  <Layers className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Keterangan Peta Spasial</span>
+                  <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -460,7 +690,12 @@ export default function SpatialMapWorkspace({ data, darkMode }: SpatialMapWorksp
                 <div>Moda: <b>{selectedNode.nama_moda}</b></div>
                 <div>Provinsi: <b>{selectedNode.provinsi}</b></div>
                 <div>Realisasi 2025: <b>{fmt(selectedNode.realisasi_pnp_2025)}</b></div>
-                <div>Proyeksi 2026: <b className="text-sky-600 dark:text-sky-400">{fmt(selectedNode.proyeksi_pnp_2026)}</b></div>
+                <div>
+                  Proyeksi 2026:{" "}
+                  <b className="text-sky-600 dark:text-sky-400">
+                    {fmt(selectedNode.proyeksi_pnp_2026)}
+                  </b>
+                </div>
               </div>
             </div>
           )}

@@ -69,7 +69,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
 
   // 1. ECharts Option: Tren Harian 3 Tahun (2024, 2025, Proyeksi 2026/2027)
   const dailyTrendOption = useMemo(() => {
-    const xDays = activeDailyRows.map((r) => `${r.Hari_Operasional}\n(${r.Hari_Pekan_2026.slice(0, 3)})`);
+    const xDays = activeDailyRows.map((r) => r.Hari_Operasional);
     const v2024 = activeDailyRows.map((r) => r.Volume_2024);
     const v2025 = activeDailyRows.map((r) => r.Volume_2025);
     const v2026 = activeDailyRows.map((r) => r.Proyeksi_2026_2027);
@@ -90,7 +90,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
           const idx = params[0].dataIndex;
           const row = activeDailyRows[idx];
           const unit = metricType === "penumpang" ? "orang" : "unit";
-          let html = `<div style="font-weight:700;margin-bottom:6px;">${row.Hari_Operasional} (${row.Hari_Pekan_2026}) — ${selectedModa}</div>`;
+          let html = `<div style="font-weight:700;margin-bottom:6px;">${row.Hari_Operasional} — ${selectedModa}</div>`;
           params.forEach((p) => {
             html += `<div style="display:flex;justify-content:space-between;gap:16px;margin:2px 0;">
               <span>${p.marker} ${p.seriesName}</span>
@@ -252,30 +252,18 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
     <div className="space-y-6">
       {/* BANNER IDENTITAS EKSEKUTIF */}
       <div className="rounded-2xl bg-gradient-to-r from-[#002554] via-[#003882] to-[#0066CC] p-6 text-white shadow-lg border border-sky-700/40">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-sky-100 text-xs font-semibold mb-2">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
-              Sumber Data Resmi: Portal STRATEGI Kemenhub (https://strategi.kemenhub.go.id/)
-            </div>
-            <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">
-              Ikhtisar Eksekutif Proyeksi & Kesiagaan Posko Angkutan Nataru 2026/2027
-            </h1>
-            <p className="text-xs md:text-[13px] text-sky-100/90 mt-1.5 xl:whitespace-nowrap">
-              Sistem Pendukung Keputusan (DSS) Terpadu Lintas 5 Moda Penumpang, Koridor Tol & Arteri pada{" "}
-              <span className="font-bold text-amber-300">1.212 Simpul Pantauan Nasional</span> (Periode H-7 s.d H+10).
-            </p>
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-sky-100 text-xs font-semibold mb-2.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+            Sumber Data Resmi: Portal STRATEGI Kemenhub (https://strategi.kemenhub.go.id/)
           </div>
-          <div className="flex flex-col gap-2 shrink-0 sm:min-w-[230px]">
-            <div className="px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-right">
-              <div className="text-[10px] uppercase tracking-wider text-sky-200">Model Champion</div>
-              <div className="text-xs font-bold text-white">Damped Holt-Winters (φ=0,98)</div>
-            </div>
-            <div className="px-3.5 py-2 rounded-xl bg-emerald-500/20 backdrop-blur border border-emerald-400/35 text-right">
-              <div className="text-[10px] uppercase tracking-wider text-emerald-200">MAPE Agregat Nasional</div>
-              <div className="text-sm font-extrabold text-emerald-300 num-tabular">6,93% (Akurasi 98,04%)</div>
-            </div>
-          </div>
+          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">
+            Ikhtisar Eksekutif Proyeksi & Kesiagaan Posko Angkutan Nataru 2026/2027
+          </h1>
+          <p className="text-xs md:text-sm text-sky-100/90 mt-1.5 leading-relaxed">
+            Sistem Pendukung Keputusan (DSS) Terpadu Lintas 5 Moda Penumpang, Koridor Tol & Arteri pada{" "}
+            <span className="font-bold text-amber-300">1.212 Simpul Pantauan Nasional</span> (Periode H-7 s.d H+10).
+          </p>
         </div>
       </div>
 
@@ -387,18 +375,18 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
 
       {/* BARIS 2: GRAFIK TREN HARIAN 3 TAHUN (2024, 2025, PROYEKSI 2026/2027) */}
       <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white">
+            <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
               Grafik Tren Pergerakan Harian Posko (H-7 s.d H+10) — Komparasi 3 Tahun
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Perbandingan kurva harian Realisasi 2024, Realisasi 2025, dan Proyeksi 2026/2027 berbasis Damped Holt-Winters
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Komparasi kurva mobilitas harian Realisasi 2024, Realisasi 2025, dan Proyeksi 2026/2027
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2.5 shrink-0 self-start xl:self-center">
             {/* Toggle Penumpang vs Sarana */}
-            <div className="inline-flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1">
+            <div className="inline-flex rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700">
               <button
                 onClick={() => {
                   setMetricType("penumpang");
@@ -406,23 +394,23 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
                     setSelectedModa("TOTAL SELURUH MODA");
                   }
                 }}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition ${
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition whitespace-nowrap ${
                   metricType === "penumpang"
                     ? "bg-[#003882] text-white shadow-sm dark:bg-sky-600"
                     : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
                 }`}
               >
-                Pergerakan Penumpang
+                Penumpang
               </button>
               <button
                 onClick={() => setMetricType("sarana")}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition ${
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition whitespace-nowrap ${
                   metricType === "sarana"
                     ? "bg-[#003882] text-white shadow-sm dark:bg-sky-600"
                     : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
                 }`}
               >
-                Pergerakan Sarana / Armada
+                Sarana / Armada
               </button>
             </div>
 
@@ -430,7 +418,7 @@ export default function OverviewWorkspace({ data, darkMode }: OverviewWorkspaceP
             <select
               value={selectedModa}
               onChange={(e) => setSelectedModa(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="h-[32px] px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500 shrink-0"
             >
               {modaList.map((m) => (
                 <option key={m} value={m}>

@@ -100,23 +100,21 @@ export default function CorridorWorkspace({ data, darkMode }: CorridorWorkspaceP
         {
           name: "Roda 4 Pribadi (Mobil)",
           type: "bar",
-          stack: "total",
+          barGap: "20%",
           data: data.asdp_kendaraan.map((a) => a.proyeksi_roda_4),
-          itemStyle: { color: "#0284c7" },
+          itemStyle: { color: "#0284c7", borderRadius: [4, 4, 0, 0] },
         },
         {
           name: "Roda 2 (Sepeda Motor)",
           type: "bar",
-          stack: "total",
           data: data.asdp_kendaraan.map((a) => a.proyeksi_roda_2),
-          itemStyle: { color: "#10b981" },
+          itemStyle: { color: "#10b981", borderRadius: [4, 4, 0, 0] },
         },
         {
-          name: "Truk Logistik Sumbu 3",
+          name: "Truk Logistik Sumbu 3+",
           type: "bar",
-          stack: "total",
           data: data.asdp_kendaraan.map((a) => a.proyeksi_truk_logistik),
-          itemStyle: { color: "#f59e0b", borderRadius: [6, 6, 0, 0] },
+          itemStyle: { color: "#f59e0b", borderRadius: [4, 4, 0, 0] },
         },
       ],
     };
