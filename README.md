@@ -10,7 +10,7 @@
 * **Nama Mahasiswa:** Devi Andini Sastro (NPM: 10123320)
 * **Program Studi:** S1 Sistem Informasi — Fakultas Ilmu Komputer dan Teknologi Informasi, Universitas Gunadarma
 * **Mentor Pembimbing:** Hendry Setiadi (Ketua Tim Pengelolaan Data Pusdatin Kemenhub RI)
-* **Sumber Data Resmi:** Web Portal **STRATEGI Kemenhub** (`strategi.kemenhub.go.id`) & Platform Business Intelligence **Metabase Pusdatin Kemenhub RI**
+* **Sumber Data Resmi:** Web Portal **STRATEGI Kemenhub** (`strategi.kemenhub.go.id`) **
 
 ---
 
