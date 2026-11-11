@@ -32,6 +32,8 @@ jobs:
 
       - name: Build with Next.js Static Export
         run: npm run build
+        env:
+          GITHUB_PAGES: "true"
 
       - name: Touch .nojekyll
         run: touch ./out/.nojekyll
