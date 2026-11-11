@@ -1,0 +1,164 @@
+[
+  {
+    "waktu_id": "TM-01",
+    "kode_hari": "H-7",
+    "urutan_hari": 1,
+    "tanggal_kalender": "18 Des 2026",
+    "hari_pekan": "Jumat",
+    "is_akhir_pekan": true,
+    "fase_operasional": "Pra-Mudik Awal"
+  },
+  {
+    "waktu_id": "TM-02",
+    "kode_hari": "H-6",
+    "urutan_hari": 2,
+    "tanggal_kalender": "19 Des 2026",
+    "hari_pekan": "Sabtu",
+    "is_akhir_pekan": true,
+    "fase_operasional": "Pra-Mudik Akhir Pekan"
+  },
+  {
+    "waktu_id": "TM-03",
+    "kode_hari": "H-5",
+    "urutan_hari": 3,
+    "tanggal_kalender": "20 Des 2026",
+    "hari_pekan": "Minggu",
+    "is_akhir_pekan": true,
+    "fase_operasional": "Gelombang Mudik 1"
+  },
+  {
+    "waktu_id": "TM-04",
+    "kode_hari": "H-4",
+    "urutan_hari": 4,
+    "tanggal_kalender": "21 Des 2026",
+    "hari_pekan": "Senin",
+    "is_akhir_pekan": false,
+    "fase_operasional": "Gelombang Mudik 1"
+  },
+  {
+    "waktu_id": "TM-05",
+    "kode_hari": "H-3",
+    "urutan_hari": 5,
+    "tanggal_kalender": "22 Des 2026",
+    "hari_pekan": "Selasa",
+    "is_akhir_pekan": false,
+    "fase_operasional": "Gelombang Mudik 2"
+  },
+  {
+    "waktu_id": "TM-06",
+    "kode_hari": "H-2",
+    "urutan_hari": 6,
+    "tanggal_kalender": "23 Des 2026",
+    "hari_pekan": "Rabu",
+    "is_akhir_pekan": false,
+    "fase_operasional": "Puncak Mudik Natal 1"
+  },
+  {
+    "waktu_id": "TM-07",
+    "kode_hari": "H-1",
+    "urutan_hari": 7,
+    "tanggal_kalender": "24 Des 2026",
+    "hari_pekan": "Kamis",
+    "is_akhir_pekan": false,
+    "fase_operasional": "Puncak Mudik Natal 2"
+  },
+  {
+    "waktu_id": "TM-08",
+    "kode_hari": "H",
+    "urutan_hari": 8,
+    "tanggal_kalender": "25 Des 2026",
+    "hari_pekan": "Jumat",
+    "is_akhir_pekan": true,
+    "fase_operasional": "Hari Raya Natal"
+  },
+  {
+    "waktu_id": "TM-09",
+    "kode_hari": "H+1",
+    "urutan_hari": 9,
+    "tanggal_kalender": "26 Des 2026",
+    "hari_pekan": "Sabtu",
+    "is_akhir_pekan": true,
+    "fase_operasional": "Libur Pasca-Natal"
+  },
+  {
+    "waktu_id": "TM-10",
+    "kode_hari": "H+2",
+    "urutan_hari": 10,
+    "tanggal_kalender": "27 Des 2026",
+    "hari_pekan": "Minggu",
+    "is_akhir_pekan": true,
+    "fase_operasional": "Transisi Tahun Baru"
+  },
+  {
+    "waktu_id": "TM-11",
+    "kode_hari": "H+3",
+    "urutan_hari": 11,
+    "tanggal_kalender": "28 Des 2026",
+    "hari_pekan": "Senin",
+    "is_akhir_pekan": false,
+    "fase_operasional": "Arus Wisata Akhir Tahun"
+  },
+  {
+    "waktu_id": "TM-12",
+    "kode_hari": "H+4",
+    "urutan_hari": 12,
+    "tanggal_kalender": "29 Des 2026",
+    "hari_pekan": "Selasa",
+    "is_akhir_pekan": false,
+    "fase_operasional": "Arus Wisata Akhir Tahun"
+  },
+  {
+    "waktu_id": "TM-13",
+    "kode_hari": "H+5",
+    "urutan_hari": 13,
+    "tanggal_kalender": "30 Des 2026",
+    "hari_pekan": "Rabu",
+    "is_akhir_pekan": false,
+    "fase_operasional": "Malam Tahun Baru -1"
+  },
+  {
+    "waktu_id": "TM-14",
+    "kode_hari": "H+6",
+    "urutan_hari": 14,
+    "tanggal_kalender": "31 Des 2026",
+    "hari_pekan": "Kamis",
+    "is_akhir_pekan": false,
+    "fase_operasional": "Malam Tahun Baru"
+  },
+  {
+    "waktu_id": "TM-15",
+    "kode_hari": "H+7",
+    "urutan_hari": 15,
+    "tanggal_kalender": "01 Jan 2027",
+    "hari_pekan": "Jumat",
+    "is_akhir_pekan": true,
+    "fase_operasional": "Tahun Baru 2027"
+  },
+  {
+    "waktu_id": "TM-16",
+    "kode_hari": "H+8",
+    "urutan_hari": 16,
+    "tanggal_kalender": "02 Jan 2027",
+    "hari_pekan": "Sabtu",
+    "is_akhir_pekan": true,
+    "fase_operasional": "Puncak Arus Balik 1"
+  },
+  {
+    "waktu_id": "TM-17",
+    "kode_hari": "H+9",
+    "urutan_hari": 17,
+    "tanggal_kalender": "03 Jan 2027",
+    "hari_pekan": "Minggu",
+    "is_akhir_pekan": true,
+    "fase_operasional": "Puncak Arus Balik 2"
+  },
+  {
+    "waktu_id": "TM-18",
+    "kode_hari": "H+10",
+    "urutan_hari": 18,
+    "tanggal_kalender": "04 Jan 2027",
+    "hari_pekan": "Senin",
+    "is_akhir_pekan": false,
+    "fase_operasional": "Penutupan Posko"
+  }
+]

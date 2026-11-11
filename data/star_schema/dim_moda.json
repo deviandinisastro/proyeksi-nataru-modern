@@ -1,0 +1,72 @@
+[
+  {
+    "moda_id": "MD-01",
+    "nama_moda": "Angkutan Udara",
+    "kategori_moda": "Angkutan Umum Penumpang",
+    "satuan_sarana": "Pesawat (Flight)",
+    "jumlah_simpul_pantau": 257,
+    "kapasitas_harian_acuan": 325000,
+    "load_factor_baseline_2025_pct": 81.5,
+    "load_factor_proyeksi_2026_pct": 83.4
+  },
+  {
+    "moda_id": "MD-02",
+    "nama_moda": "Kereta Api",
+    "kategori_moda": "Angkutan Umum Penumpang",
+    "satuan_sarana": "Rangkaian KA",
+    "jumlah_simpul_pantau": 197,
+    "kapasitas_harian_acuan": 245000,
+    "load_factor_baseline_2025_pct": 87.7,
+    "load_factor_proyeksi_2026_pct": 92.1
+  },
+  {
+    "moda_id": "MD-03",
+    "nama_moda": "Angkutan SDP",
+    "kategori_moda": "Angkutan Umum Penumpang",
+    "satuan_sarana": "Kapal Ro-Ro (Trip)",
+    "jumlah_simpul_pantau": 276,
+    "kapasitas_harian_acuan": 265000,
+    "load_factor_baseline_2025_pct": 79.5,
+    "load_factor_proyeksi_2026_pct": 80.0
+  },
+  {
+    "moda_id": "MD-04",
+    "nama_moda": "Angkutan Jalan",
+    "kategori_moda": "Angkutan Umum Penumpang",
+    "satuan_sarana": "Bus AKAP/AKDP",
+    "jumlah_simpul_pantau": 215,
+    "kapasitas_harian_acuan": 250000,
+    "load_factor_baseline_2025_pct": 70.3,
+    "load_factor_proyeksi_2026_pct": 76.3
+  },
+  {
+    "moda_id": "MD-05",
+    "nama_moda": "Angkutan Laut",
+    "kategori_moda": "Angkutan Umum Penumpang",
+    "satuan_sarana": "Kapal Pelni/Perintis",
+    "jumlah_simpul_pantau": 267,
+    "kapasitas_harian_acuan": 168000,
+    "load_factor_baseline_2025_pct": 74.6,
+    "load_factor_proyeksi_2026_pct": 75.0
+  },
+  {
+    "moda_id": "MD-06",
+    "nama_moda": "Jalan Tol",
+    "kategori_moda": "Jaringan Jalan & Koridor",
+    "satuan_sarana": "Kendaraan Gol I-V",
+    "jumlah_simpul_pantau": 4,
+    "kapasitas_harian_acuan": 1500000,
+    "load_factor_baseline_2025_pct": 78.5,
+    "load_factor_proyeksi_2026_pct": 80.2
+  },
+  {
+    "moda_id": "MD-07",
+    "nama_moda": "Jalan Arteri",
+    "kategori_moda": "Jaringan Jalan & Koridor",
+    "satuan_sarana": "Kendaraan Campuran",
+    "jumlah_simpul_pantau": 96,
+    "kapasitas_harian_acuan": 950000,
+    "load_factor_baseline_2025_pct": 72.0,
+    "load_factor_proyeksi_2026_pct": 74.1
+  }
+]

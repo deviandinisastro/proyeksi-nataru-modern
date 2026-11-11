@@ -1,0 +1,187 @@
+[
+  {
+    "nama_tabel": "fact_pergerakan_posko",
+    "jenis_tabel": "Fact Table (Tabel Fakta Utama)",
+    "deskripsi": "Menyimpan metrik kuantitatif pergerakan penumpang, sarana/armada, dan rasio keterisian (Load Factor) harian per moda.",
+    "kolom": [
+      {
+        "nama": "fakta_id",
+        "tipe": "VARCHAR(12) PK",
+        "keterangan": "Primary Key unik baris transaksi fakta posko"
+      },
+      {
+        "nama": "event_id",
+        "tipe": "VARCHAR(20) FK",
+        "keterangan": "Foreign Key ke tabel dim_event (Nataru/Lebaran)"
+      },
+      {
+        "nama": "kode_hari",
+        "tipe": "VARCHAR(6) FK",
+        "keterangan": "Foreign Key ke tabel dim_waktu_posko (H-7 s.d H+10)"
+      },
+      {
+        "nama": "nama_moda",
+        "tipe": "VARCHAR(30) FK",
+        "keterangan": "Foreign Key ke tabel dim_moda (5 Moda Penumpang)"
+      },
+      {
+        "nama": "penumpang_2024",
+        "tipe": "INTEGER",
+        "keterangan": "Realisasi volume penumpang harian Nataru 2024/2025 (orang)"
+      },
+      {
+        "nama": "penumpang_2025",
+        "tipe": "INTEGER",
+        "keterangan": "Realisasi volume penumpang harian Nataru 2025/2026 (orang)"
+      },
+      {
+        "nama": "penumpang_proyeksi_2026",
+        "tipe": "INTEGER",
+        "keterangan": "Hasil proyeksi penumpang harian Nataru 2026/2027 (orang)"
+      },
+      {
+        "nama": "sarana_proyeksi_2026",
+        "tipe": "INTEGER",
+        "keterangan": "Hasil proyeksi pergerakan armada/sarana harian (unit)"
+      },
+      {
+        "nama": "estimasi_load_factor_pct",
+        "tipe": "DECIMAL(5,2)",
+        "keterangan": "Rasio tingkat keterisian kursi sarana harian (%)"
+      }
+    ]
+  },
+  {
+    "nama_tabel": "dim_waktu_posko",
+    "jenis_tabel": "Dimension Table (Dimensi Waktu Operasional)",
+    "deskripsi": "Menyimpan atribut kronologis 18 hari operasional Posko Terpadu Kemenhub (H-7 s.d H+10).",
+    "kolom": [
+      {
+        "nama": "waktu_id",
+        "tipe": "VARCHAR(8) PK",
+        "keterangan": "Primary Key dimensi waktu"
+      },
+      {
+        "nama": "kode_hari",
+        "tipe": "VARCHAR(6)",
+        "keterangan": "Kode hari posko standar Kemenhub (H-7 s.d H+10)"
+      },
+      {
+        "nama": "tanggal_kalender",
+        "tipe": "DATE / VARCHAR",
+        "keterangan": "Tanggal kalender Masehi operasional posko"
+      },
+      {
+        "nama": "hari_pekan",
+        "tipe": "VARCHAR(12)",
+        "keterangan": "Nama hari dalam sepekan (Senin s.d Minggu)"
+      },
+      {
+        "nama": "is_akhir_pekan",
+        "tipe": "BOOLEAN",
+        "keterangan": "Penanda bobot kalender akhir pekan (Jumat-Minggu)"
+      },
+      {
+        "nama": "fase_operasional",
+        "tipe": "VARCHAR(40)",
+        "keterangan": "Fase gelombang arus (Pra-Mudik, Puncak Mudik, Arus Balik)"
+      }
+    ]
+  },
+  {
+    "nama_tabel": "dim_moda",
+    "jenis_tabel": "Dimension Table (Dimensi Moda Transportasi)",
+    "deskripsi": "Menyimpan spesifikasi kapasitas, jumlah simpul pantau, dan satuan sarana untuk tiap moda transportasi.",
+    "kolom": [
+      {
+        "nama": "moda_id",
+        "tipe": "VARCHAR(8) PK",
+        "keterangan": "Primary Key dimensi moda transportasi"
+      },
+      {
+        "nama": "nama_moda",
+        "tipe": "VARCHAR(30)",
+        "keterangan": "Nama resmi moda pada Portal STRATEGI Kemenhub"
+      },
+      {
+        "nama": "satuan_sarana",
+        "tipe": "VARCHAR(30)",
+        "keterangan": "Satuan ukur sarana (Pesawat, Rangkaian KA, Bus, Kapal Ro-Ro)"
+      },
+      {
+        "nama": "jumlah_simpul_pantau",
+        "tipe": "INTEGER",
+        "keterangan": "Jumlah titik simpul pantauan nasional terverifikasi"
+      },
+      {
+        "nama": "load_factor_proyeksi_2026_pct",
+        "tipe": "DECIMAL(5,2)",
+        "keterangan": "Rata-rata rasio keterisian kapasitas moda (%)"
+      }
+    ]
+  },
+  {
+    "nama_tabel": "dim_simpul_1212",
+    "jenis_tabel": "Dimension Table (Dimensi Wilayah & 1.212 Simpul Spasial)",
+    "deskripsi": "Menyimpan master data 1.212 titik simpul pantauan nasional beserta koordinat geografis Web GIS.",
+    "kolom": [
+      {
+        "nama": "simpul_id",
+        "tipe": "VARCHAR(12) PK",
+        "keterangan": "Primary Key unik simpul transportasi"
+      },
+      {
+        "nama": "kode_simpul",
+        "tipe": "VARCHAR(16)",
+        "keterangan": "Kode IATA/Stasiun/Terminal pada Portal STRATEGI"
+      },
+      {
+        "nama": "nama_simpul",
+        "tipe": "VARCHAR(100)",
+        "keterangan": "Nama resmi bandara, stasiun, terminal, atau pelabuhan"
+      },
+      {
+        "nama": "provinsi",
+        "tipe": "VARCHAR(50)",
+        "keterangan": "Wilayah provinsi lokasi simpul berada"
+      },
+      {
+        "nama": "lat / lon",
+        "tipe": "DECIMAL(9,6)",
+        "keterangan": "Koordinat Lintang (Latitude) dan Bujur (Longitude) Web GIS"
+      },
+      {
+        "nama": "proyeksi_pnp_2026",
+        "tipe": "INTEGER",
+        "keterangan": "Alokasi proyeksi penumpang tingkat simpul (Hierarchical Top-Down)"
+      }
+    ]
+  },
+  {
+    "nama_tabel": "dim_event",
+    "jenis_tabel": "Dimension Table (Dimensi Event Angkutan Nasional)",
+    "deskripsi": "Menyimpan parameter event posko angkutan massal nasional (Angkutan Nataru dan Angkutan Lebaran).",
+    "kolom": [
+      {
+        "nama": "event_id",
+        "tipe": "VARCHAR(20) PK",
+        "keterangan": "Primary Key identifikasi event posko nasional"
+      },
+      {
+        "nama": "nama_event",
+        "tipe": "VARCHAR(80)",
+        "keterangan": "Nama resmi penyelenggaraan posko terpadu"
+      },
+      {
+        "nama": "durasi_hari",
+        "tipe": "INTEGER",
+        "keterangan": "Lama hari pemantauan posko (18 hari Nataru / 17 hari Lebaran)"
+      },
+      {
+        "nama": "total_penumpang_acuan",
+        "tipe": "INTEGER",
+        "keterangan": "Total akumulasi pergerakan penumpang nasional selama event"
+      }
+    ]
+  }
+]
